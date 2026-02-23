@@ -1,0 +1,84 @@
+{% extends 'landing_base.html' %}
+
+{% block title %}Welcome - Smart Agricultural Loan System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, var(--agri-green-dark), var(--agri-green));
+        color: white;
+        padding: 80px 0;
+    }
+    .feature-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+    }
+    .feature-icon {
+        font-size: 3rem;
+        color: var(--agri-green);
+    }
+    .cta-section {
+        background-color: var(--agri-light);
+        padding: 60px 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">Smart Agricultural Loan System</h1>
+        <p class="lead mb-4">Empowering Farmers with Easy Access to Credit</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'login' %}" class="btn btn-light btn-lg">Sign In</a>
+            <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg">Register</a>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <h2 class="text-center mb-5">Our Features</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card feature-card p-4 text-center h-100">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+                <h4>Easy Loan Applications</h4>
+                <p class="text-muted">Apply for loans with simple steps and quick approval process.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card p-4 text-center h-100">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <h4>Track Your Progress</h4>
+                <p class="text-muted">Monitor your loan status and repayment history in real-time.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card feature-card p-4 text-center h-100">
+                <div class="feature-icon mb-3">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <h4>Secure & Reliable</h4>
+                <p class="text-muted">Your data is protected with enterprise-grade security.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section text-center">
+    <div class="container">
+        <h2 class="mb-3">Ready to Get Started?</h2>
+        <p class="mb-4">Join thousands of farmers who have improved their livelihoods with our loan system.</p>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Create Your Account</a>
+    </div>
+</div>
+{% endblock %}

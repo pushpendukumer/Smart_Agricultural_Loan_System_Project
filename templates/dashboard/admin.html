@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Admin Dashboard - Smart Agricultural Loan System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .bg-gradient-green {
+        background: linear-gradient(135deg, #2e7d32, #4caf50);
+    }
+    .bg-gradient-orange {
+        background: linear-gradient(135deg, #f57c00, #ff9800);
+    }
+    .bg-gradient-blue {
+        background: linear-gradient(135deg, #1976d2, #42a5f5);
+    }
+    .bg-gradient-purple {
+        background: linear-gradient(135deg, #7b1fa2, #ba68c8);
+    }
+    .bg-gradient-red {
+        background: linear-gradient(135deg, #c62828, #ef5350);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h3 class="fw-bold"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h3>
+        <p class="text-muted">Welcome back! Here's an overview of your loan system.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-green text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Total Farmers</p>
+                        <h2 class="mb-0 fw-bold">{{ total_farmers }}</h2>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-blue text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Total Loans</p>
+                        <h2 class="mb-0 fw-bold">{{ total_loans }}</h2>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-currency-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-purple text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Approved Loans</p>
+                        <h2 class="mb-0 fw-bold">{{ approved_loans }}</h2>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-orange text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Pending Loans</p>
+                        <h2 class="mb-0 fw-bold">{{ pending_loans }}</h2>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-green text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Total Disbursed</p>
+                        <h4 class="mb-0 fw-bold">${{ total_disbursed|floatformat:2 }}</h4>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-bank"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-purple text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Total Repaid</p>
+                        <h4 class="mb-0 fw-bold">${{ total_repaid|floatformat:2 }}</h4>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-red text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Rejected Loans</p>
+                        <h2 class="mb-0 fw-bold">{{ rejected_loans }}</h2>
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card stat-card bg-gradient-blue text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 mb-2">Recovery Rate</p>
+                        {% if total_disbursed > 0 %}
+                        <h2 class="mb-0 fw-bold">{{ total_repaid|div:total_disbursed|multiply:100|floatformat:1 }}%</h2>
+                        {% else %}
+                        <h2 class="mb-0 fw-bold">0%</h2>
+                        {% endif %}
+                    </div>
+                    <div class="stat-icon bg-white bg-opacity-25">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>Loans by Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Loans by Type</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Loan Applications</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in recent_loans %}
+                            <tr>
+                                <td>{{ loan.farmer.username }}</td>
+                                <td>{{ loan.loan_type.name }}</td>
+                                <td>${{ loan.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if loan.status == 'Pending' %}
+                                        <span class="badge bg-warning">{{ loan.status }}</span>
+                                    {% elif loan.status == 'Approved' %}
+                                        <span class="badge bg-success">{{ loan.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ loan.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Recent Repayments</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Loan ID</th>
+                                <th>Amount</th>
+                                <th>Balance</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for repayment in recent_repayments %}
+                            <tr>
+                                <td>#{{ repayment.loan.id }}</td>
+                                <td class="text-success">${{ repayment.amount_paid|floatformat:2 }}</td>
+                                <td>${{ repayment.remaining_balance|floatformat:2 }}</td>
+                                <td>{{ repayment.payment_date|date:"M d" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const statusData = {{ loans_by_status|safe }};
+    const typeData = {{ loans_by_type|safe }};
+
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => item.status),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: ['#ffc107', '#28a745', '#dc3545'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'bar',
+        data: {
+            labels: typeData.map(item => item.loan_type__name || 'Unknown'),
+            datasets: [{
+                label: 'Approved Loans',
+                data: typeData.map(item => item.count),
+                backgroundColor: '#2e7d32',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Loan History - Smart Agricultural Loan System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-clock-history me-2"></i>My Loan Applications</h4>
+                <a href="{% url 'loan_apply' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Apply for New Loan
+                </a>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if page_obj %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Loan Type</th>
+                                <th>Amount</th>
+                                <th>Duration</th>
+                                <th>EMI</th>
+                                <th>Risk Score</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in page_obj %}
+                            <tr>
+                                <td>#{{ loan.id }}</td>
+                                <td>{{ loan.loan_type.name }}</td>
+                                <td>${{ loan.amount|floatformat:2 }}</td>
+                                <td>{{ loan.duration_months }} months</td>
+                                <td>${{ loan.emi|floatformat:2 }}</td>
+                                <td>
+                                    {% if loan.risk_score >= 70 %}
+                                        <span class="badge bg-success">{{ loan.risk_score }}</span>
+                                    {% elif loan.risk_score >= 40 %}
+                                        <span class="badge bg-warning">{{ loan.risk_score }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ loan.risk_score }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if loan.status == 'Pending' %}
+                                        <span class="badge bg-warning">{{ loan.status }}</span>
+                                    {% elif loan.status == 'Approved' %}
+                                        <span class="badge bg-success">{{ loan.status }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ loan.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ loan.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'loan_detail' loan.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if loan.status == 'Approved' %}
+                                    <a href="{% url 'make_repayment' loan.id %}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-cash"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if page_obj.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Previous</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Next</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="mt-3 text-muted">No loan applications yet.</p>
+                    <a href="{% url 'loan_apply' %}" class="btn btn-primary">Apply for Your First Loan</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

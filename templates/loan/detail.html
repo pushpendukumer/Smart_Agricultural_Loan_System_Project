@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Loan Details - Smart Agricultural Loan System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-file-earmark-text me-2"></i>Loan Application #{{ application.id }}</h4>
+                <a href="{% url 'loan_history' %}" class="btn btn-secondary btn-sm">Back to History</a>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Status</label>
+                            <p>
+                                {% if application.status == 'Pending' %}
+                                    <span class="badge bg-warning fs-6">{{ application.status }}</span>
+                                {% elif application.status == 'Approved' %}
+                                    <span class="badge bg-success fs-6">{{ application.status }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">{{ application.status }}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Risk Score</label>
+                            <p>
+                                {% if application.risk_score >= 70 %}
+                                    <span class="badge bg-success fs-6">{{ application.risk_score }}/100</span>
+                                {% elif application.risk_score >= 40 %}
+                                    <span class="badge bg-warning fs-6">{{ application.risk_score }}/100</span>
+                                {% else %}
+                                    <span class="badge bg-danger fs-6">{{ application.risk_score }}/100</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Loan Type</label>
+                        <p class="fw-bold">{{ application.loan_type.name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Interest Rate</label>
+                        <p class="fw-bold">{{ application.loan_type.interest_rate }}%</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Loan Amount</label>
+                        <p class="fw-bold">${{ application.amount|floatformat:2 }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Duration</label>
+                        <p class="fw-bold">{{ application.duration_months }} months</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Monthly EMI</label>
+                        <p class="fw-bold text-success">${{ application.emi|floatformat:2 }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Total Repayment</label>
+                        <p class="fw-bold">${{ application.emi|floatformat:2 }} x {{ application.duration_months }} = ${{ application.emi|add:application.emi|floatformat:2 }}</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Applied On</label>
+                        <p class="fw-bold">{{ application.created_at|date:"F d, Y, h:i A" }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">Last Updated</label>
+                        <p class="fw-bold">{{ application.updated_at|date:"F d, Y, h:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

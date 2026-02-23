@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for Loan - Smart Agricultural Loan System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h4 class="mb-0"><i class="bi bi-currency-dollar me-2"></i>Apply for Loan</h4>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if loan_types %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="id_loan_type" class="form-label">Loan Type *</label>
+                        <select class="form-select" id="id_loan_type" name="loan_type" required onchange="updateMaxAmount()">
+                            <option value="">Select loan type</option>
+                            {% for lt in loan_types %}
+                                <option value="{{ lt.id }}" data-max="{{ lt.max_amount }}" data-rate="{{ lt.interest_rate }}">
+                                    {{ lt.name }} - {{ lt.interest_rate }}% Interest (Max: ৳{{ lt.max_amount }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.loan_type.errors %}
+                            <div class="text-danger small">{{ form.loan_type.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_amount" class="form-label">Loan Amount (BDT) *</label>
+                            <input type="number" class="form-control" id="id_amount" name="amount" step="0.01" min="1" max="{{ max_loan_amount }}" required>
+                            <div class="form-text">Maximum: <span id="max_amount_display">৳{{ max_loan_amount|default:0 }}</span></div>
+                            {% if form.amount.errors %}
+                                <div class="text-danger small">{{ form.amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_duration_months" class="form-label">Duration (Months) *</label>
+                            <input type="number" class="form-control" id="id_duration_months" name="duration_months" min="1" max="60" required>
+                            {% if form.duration_months.errors %}
+                                <div class="text-danger small">{{ form.duration_months.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" id="emi_preview" style="display: none;">
+                        <h5><i class="bi bi-calculator me-2"></i>EMI Preview</h5>
+                        <p class="mb-1">Estimated Monthly EMI: <strong id="emi_value">৳0.00</strong></p>
+                        <p class="mb-0 small text-muted">This is an estimate. Actual EMI may vary.</p>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Submit Application
+                        </button>
+                        <a href="{% url 'loan_history' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>No loan types available. Please contact administrator.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateMaxAmount() {
+    const select = document.getElementById('id_loan_type');
+    const option = select.options[select.selectedIndex];
+    const maxAmount = option.dataset.max || {{ max_loan_amount|default:0 }};
+    const rate = option.dataset.rate || 0;
+    
+    document.getElementById('max_amount_display').textContent = '৳' + parseFloat(maxAmount).toLocaleString();
+    document.getElementById('id_amount').max = maxAmount;
+    
+    calculateEMI();
+}
+
+function calculateEMI() {
+    const select = document.getElementById('id_loan_type');
+    const option = select.options[select.selectedIndex];
+    const rate = parseFloat(option.dataset.rate) || 0;
+    const amount = parseFloat(document.getElementById('id_amount').value) || 0;
+    const months = parseInt(document.getElementById('id_duration_months').value) || 0;
+    
+    if (amount > 0 && months > 0 && rate > 0) {
+        const monthlyRate = rate / 100 / 12;
+        const emi = amount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+        document.getElementById('emi_value').textContent = '৳' + emi.toFixed(2);
+        document.getElementById('emi_preview').style.display = 'block';
+    } else if (amount > 0 && months > 0 && rate === 0) {
+        const emi = amount / months;
+        document.getElementById('emi_value').textContent = '৳' + emi.toFixed(2);
+        document.getElementById('emi_preview').style.display = 'block';
+    }
+}
+
+document.getElementById('id_amount').addEventListener('input', calculateEMI);
+document.getElementById('id_duration_months').addEventListener('input', calculateEMI);
+</script>
+{% endblock %}

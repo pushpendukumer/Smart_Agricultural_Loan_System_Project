@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Smart Agricultural Loan System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i>{{ title }}</h4>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_land_size" class="form-label">Land Size (Acres) *</label>
+                            {{ form.land_size }}
+                            {% if form.land_size.errors %}
+                                <div class="text-danger small">{{ form.land_size.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_crop_type" class="form-label">Crop Type *</label>
+                            {{ form.crop_type }}
+                            {% if form.crop_type.errors %}
+                                <div class="text-danger small">{{ form.crop_type.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="id_location" class="form-label">Farm Location *</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger small">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_annual_income" class="form-label">Annual Income (USD) *</label>
+                            {{ form.annual_income }}
+                            {% if form.annual_income.errors %}
+                                <div class="text-danger small">{{ form.annual_income.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_land_documents" class="form-label">Land Documents</label>
+                            {{ form.land_documents }}
+                            {% if form.land_documents.errors %}
+                                <div class="text-danger small">{{ form.land_documents.errors }}</div>
+                            {% endif %}
+                            <div class="form-text">Upload proof of land ownership (PDF, JPG, PNG)</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>Save Profile
+                        </button>
+                        <a href="{% url 'farmer_profile' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
