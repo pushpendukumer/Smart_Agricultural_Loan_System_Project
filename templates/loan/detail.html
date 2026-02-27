@@ -67,7 +67,7 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Loan Amount</label>
-                        <p class="fw-bold">${{ application.amount|floatformat:2 }}</p>
+                        <p class="fw-bold">৳{{ application.amount|floatformat:2 }}</p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Duration</label>
@@ -78,11 +78,11 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Monthly EMI</label>
-                        <p class="fw-bold text-success">${{ application.emi|floatformat:2 }}</p>
+                        <p class="fw-bold text-success">৳{{ application.emi|floatformat:2 }}</p>
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Total Repayment</label>
-                        <p class="fw-bold">${{ application.emi|floatformat:2 }} x {{ application.duration_months }} = ${{ application.emi|add:application.emi|floatformat:2 }}</p>
+                        <p class="fw-bold">৳{{ application.emi|floatformat:2 }} x {{ application.duration_months }} = ৳{{ application.emi|add:application.emi|floatformat:2 }}</p>
                     </div>
                 </div>
 

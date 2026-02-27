@@ -43,9 +43,9 @@
                             <tr>
                                 <td>#{{ loan.id }}</td>
                                 <td>{{ loan.loan_type.name }}</td>
-                                <td>${{ loan.amount|floatformat:2 }}</td>
+                                <td>৳{{ loan.amount|floatformat:2 }}</td>
                                 <td>{{ loan.duration_months }} months</td>
-                                <td>${{ loan.emi|floatformat:2 }}</td>
+                                <td>৳{{ loan.emi|floatformat:2 }}</td>
                                 <td>
                                     {% if loan.risk_score >= 70 %}
                                         <span class="badge bg-success">{{ loan.risk_score }}</span>

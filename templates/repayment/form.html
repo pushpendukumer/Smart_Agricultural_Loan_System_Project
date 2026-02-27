@@ -23,12 +23,12 @@
                     <h5>Loan Summary</h5>
                     <div class="row">
                         <div class="col-md-6">
-                            <p class="mb-1"><strong>Loan Amount:</strong> ${{ loan.amount|floatformat:2 }}</p>
-                            <p class="mb-1"><strong>Monthly EMI:</strong> ${{ loan.emi|floatformat:2 }}</p>
+                            <p class="mb-1"><strong>Loan Amount:</strong> ৳{{ loan.amount|floatformat:2 }}</p>
+                            <p class="mb-1"><strong>Monthly EMI:</strong> ৳{{ loan.emi|floatformat:2 }}</p>
                         </div>
                         <div class="col-md-6">
                             <p class="mb-1"><strong>Duration:</strong> {{ loan.duration_months }} months</p>
-                            <p class="mb-0"><strong>Remaining Balance:</strong> <span class="text-danger">${{ remaining|floatformat:2 }}</span></p>
+                            <p class="mb-0"><strong>Remaining Balance:</strong> <span class="text-danger">৳{{ remaining|floatformat:2 }}</span></p>
                         </div>
                     </div>
                 </div>
@@ -36,9 +36,9 @@
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="id_amount_paid" class="form-label">Payment Amount (USD) *</label>
+                        <label for="id_amount_paid" class="form-label">Payment Amount (BDT) *</label>
                         {{ form.amount_paid }}
-                        <div class="form-text">Maximum: ${{ remaining|floatformat:2 }}</div>
+                        <div class="form-text">Maximum: ৳{{ remaining|floatformat:2 }}</div>
                         {% if form.amount_paid.errors %}
                             <div class="text-danger small">{{ form.amount_paid.errors }}</div>
                         {% endif %}

@@ -113,7 +113,7 @@ class LoanApplicationForm(forms.ModelForm):
         
         if loan_type and amount:
             if amount > loan_type.max_amount:
-                raise forms.ValidationError(f"Amount exceeds maximum limit of ${loan_type.max_amount}")
+                raise forms.ValidationError(f"Amount exceeds maximum limit of ৳{loan_type.max_amount}")
         return cleaned_data
 
 
@@ -137,7 +137,7 @@ class RepaymentForm(forms.ModelForm):
         if self.loan:
             remaining = float(self.loan.amount) - sum(self.loan.repayments.values_list('amount_paid', flat=True))
             if amount > remaining:
-                raise forms.ValidationError(f"Amount cannot exceed remaining balance of ${remaining:.2f}")
+                raise forms.ValidationError(f"Amount cannot exceed remaining balance of ৳{remaining:.2f}")
             if amount <= 0:
                 raise forms.ValidationError("Amount must be greater than 0")
         return amount

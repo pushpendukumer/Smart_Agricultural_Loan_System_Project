@@ -163,7 +163,7 @@ def profile(request):
 
 def redirect_after_login(user):
     if user.role == 'Admin':
-        return redirect('admin:index')
+        return redirect('dashboard')
     elif user.role == 'Bank Officer':
         return redirect('home')
     else:
@@ -291,7 +291,7 @@ def loan_detail(request, pk):
 
 @login_required
 def approve_loan(request, pk):
-    if not request.user.is_staff:
+    if not (request.user.is_staff or request.user.role == 'Bank Officer'):
         messages.error(request, 'You do not have permission to approve loans.')
         return redirect('home')
     
@@ -304,7 +304,7 @@ def approve_loan(request, pk):
 
 @login_required
 def reject_loan(request, pk):
-    if not request.user.is_staff:
+    if not (request.user.is_staff or request.user.role == 'Bank Officer'):
         messages.error(request, 'You do not have permission to reject loans.')
         return redirect('home')
     
@@ -317,7 +317,7 @@ def reject_loan(request, pk):
 
 @login_required
 def loan_list(request):
-    if not request.user.is_staff:
+    if not (request.user.is_staff or request.user.role == 'Bank Officer'):
         return redirect('home')
     
     applications = LoanApplication.objects.all().order_by('-created_at')

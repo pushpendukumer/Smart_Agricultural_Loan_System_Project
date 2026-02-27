@@ -28,7 +28,7 @@
                             <h5 class="mb-0">Total Repaid</h5>
                             <p class="mb-0 text-muted">All time payments</p>
                         </div>
-                        <h2 class="mb-0">${{ total_repaid|floatformat:2 }}</h2>
+                        <h2 class="mb-0">৳{{ total_repaid|floatformat:2 }}</h2>
                     </div>
                 </div>
 
@@ -52,8 +52,8 @@
                                 <td>#{{ repayment.id }}</td>
                                 <td>#{{ repayment.loan.id }}</td>
                                 <td>{{ repayment.loan.loan_type.name }}</td>
-                                <td class="text-success">${{ repayment.amount_paid|floatformat:2 }}</td>
-                                <td>${{ repayment.remaining_balance|floatformat:2 }}</td>
+                                <td class="text-success">৳{{ repayment.amount_paid|floatformat:2 }}</td>
+                                <td>৳{{ repayment.remaining_balance|floatformat:2 }}</td>
                                 <td>{{ repayment.payment_date|date:"M d, Y, h:i A" }}</td>
                                 <td>{{ repayment.notes|truncatewords:3 }}</td>
                             </tr>

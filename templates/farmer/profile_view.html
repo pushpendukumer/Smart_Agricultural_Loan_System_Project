@@ -52,8 +52,8 @@
                         <p class="form-control-plaintext fw-bold">{{ profile.location }}</p>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label text-muted">Annual Income (USD)</label>
-                        <p class="form-control-plaintext fw-bold">${{ profile.annual_income|floatformat:2 }}</p>
+                        <label class="form-label text-muted">Annual Income (BDT)</label>
+                        <p class="form-control-plaintext fw-bold">৳{{ profile.annual_income|floatformat:2 }}</p>
                     </div>
                 </div>
 
@@ -62,9 +62,7 @@
                         <label class="form-label text-muted">Land Documents</label>
                         <p class="form-control-plaintext">
                             {% if profile.land_documents %}
-                                <a href="{{ profile.land_documents.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                                    <i class="bi bi-file-earmark-text me-1"></i>View Document
-                                </a>
+                                <span class="badge bg-success">Uploaded</span>
                             {% else %}
                                 <span class="text-muted">No document uploaded</span>
                             {% endif %}

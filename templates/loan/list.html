@@ -49,7 +49,7 @@
                                     <small class="text-muted">{{ loan.farmer.email }}</small>
                                 </td>
                                 <td>{{ loan.loan_type.name }}</td>
-                                <td>${{ loan.amount|floatformat:2 }}</td>
+                                <td>৳{{ loan.amount|floatformat:2 }}</td>
                                 <td>{{ loan.duration_months }} mo</td>
                                 <td>
                                     {% if loan.risk_score >= 70 %}

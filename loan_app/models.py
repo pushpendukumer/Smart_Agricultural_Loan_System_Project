@@ -12,6 +12,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Farmer')
     phone_number = models.CharField(max_length=20, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username
@@ -34,7 +35,7 @@ class FarmerProfile(models.Model):
     land_size = models.DecimalField(max_digits=10, decimal_places=2, help_text="Land size in acres")
     crop_type = models.CharField(max_length=50, choices=CROP_TYPE_CHOICES)
     location = models.CharField(max_length=255, help_text="Farm location/address")
-    annual_income = models.DecimalField(max_digits=12, decimal_places=2, help_text="Annual income in USD")
+    annual_income = models.DecimalField(max_digits=12, decimal_places=2, help_text="Annual income in BDT")
     land_documents = models.FileField(upload_to='farmer_documents/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,7 +47,7 @@ class FarmerProfile(models.Model):
 class LoanType(models.Model):
     name = models.CharField(max_length=100, unique=True)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate in percentage")
-    max_amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Maximum loan amount in USD")
+    max_amount = models.DecimalField(max_digits=12, decimal_places=2, help_text="Maximum loan amount in BDT")
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
