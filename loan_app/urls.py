@@ -16,6 +16,7 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('farmer/profile/', views.farmer_profile, name='farmer_profile'),
+    path('farmer/profile/view/<int:user_id>/', views.farmer_profile_view, name='farmer_profile_view'),
     path('farmer/profile/create/', views.farmer_profile_create, name='farmer_profile_create'),
     path('farmer/profile/update/', views.farmer_profile_update, name='farmer_profile_update'),
     path('farmer/upload/document/', views.upload_document, name='upload_document'),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('loans/', views.loan_list, name='loan_list'),
     path('loan/<int:loan_id>/repayment/', views.make_repayment, name='make_repayment'),
     path('repayments/', views.repayment_history, name='repayment_history'),
+    path('farmers/', views.farmer_list, name='farmer_list'),
 ]

@@ -139,6 +139,7 @@
                             <i class="bi bi-house-door"></i> Dashboard
                         </a>
                     </li>
+                    {% if user.role == 'Farmer' %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'loan_list' %}">
                             <i class="bi bi-currency-dollar"></i> Loans
@@ -164,6 +165,18 @@
                             <i class="bi bi-person-badge"></i> My Profile
                         </a>
                     </li>
+                    {% elif user.role == 'Bank Officer' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'loan_list' %}">
+                            <i class="bi bi-list-check"></i> Loan Applications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'farmer_list' %}">
+                            <i class="bi bi-people"></i> Farmers
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
             <div class="col-md-10 content-wrapper">

@@ -199,6 +199,17 @@ def farmer_profile(request):
 
 
 @login_required
+def farmer_profile_view(request, user_id):
+    if not (request.user.is_staff or request.user.role == 'Bank Officer'):
+        messages.error(request, 'You do not have permission to view this profile.')
+        return redirect('home')
+    
+    farmer = get_object_or_404(User, id=user_id, role='Farmer')
+    profile = getattr(farmer, 'farmer_profile', None)
+    return render(request, 'farmer/profile_view.html', {'profile': profile, 'farmer': farmer})
+
+
+@login_required
 def farmer_profile_create(request):
     if hasattr(request.user, 'farmer_profile'):
         messages.info(request, 'You already have a profile.')
@@ -370,3 +381,16 @@ def repayment_history(request):
     page_obj = paginator.get_page(page_number)
     total_repaid = repayments.aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
     return render(request, 'repayment/history.html', {'page_obj': page_obj, 'total_repaid': total_repaid})
+
+
+@login_required
+def farmer_list(request):
+    if not (request.user.is_staff or request.user.role == 'Bank Officer'):
+        messages.error(request, 'You do not have permission to view farmers.')
+        return redirect('home')
+    
+    farmers = User.objects.filter(role='Farmer').select_related().prefetch_related('farmer_profile')
+    paginator = Paginator(farmers, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'bank_officer/farmer_list.html', {'page_obj': page_obj})
