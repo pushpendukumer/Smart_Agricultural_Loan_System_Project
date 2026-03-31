@@ -1,0 +1,1 @@
+web: gunicorn Smart_Agricultural_Loan_System.wsgi
