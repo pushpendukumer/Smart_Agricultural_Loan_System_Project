@@ -1,1 +1,1 @@
-web: gunicorn sals_project.wsgi
+web: gunicorn sals_project.wsgi:application
