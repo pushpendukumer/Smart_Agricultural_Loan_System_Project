@@ -7,10 +7,12 @@
     <div class="col-md-8 mx-auto">
         <div class="card shadow">
             <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i>My Farmer Profile</h4>
+                <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i>{% if farmer %}Farmer Profile - {{ farmer.username }}{% else %}My Farmer Profile{% endif %}</h4>
+                {% if not farmer %}
                 <a href="{% url 'farmer_profile_update' %}" class="btn btn-primary btn-sm">
                     <i class="bi bi-pencil me-1"></i>Edit Profile
                 </a>
+                {% endif %}
             </div>
             <div class="card-body p-4">
                 {% if messages %}
@@ -67,14 +69,133 @@
                                 <span class="text-muted">No document uploaded</span>
                             {% endif %}
                         </p>
+                        {% if profile.land_documents %}
+                        <div class="mt-2">
+                            {% with profile.land_documents.name as file_name %}
+                                {% if file_name|lower|slice:"-4:" == '.pdf' %}
+                                    <a href="{{ profile.land_documents.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>View/Download PDF
+                                    </a>
+                                {% else %}
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#landDocModal" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-image me-1"></i>View Document
+                                    </a>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% endif %}
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="form-label text-muted">Profile Created</label>
                         <p class="form-control-plaintext fw-bold">{{ profile.created_at|date:"F d, Y" }}</p>
                     </div>
                 </div>
+
+                <hr class="my-4">
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label text-muted">NID Card Status</label>
+                        <div class="d-flex align-items-center gap-3">
+                            {% if profile.user.nid_card_front %}
+                                <span class="badge {% if profile.user.nid_verified %}bg-success{% else %}bg-warning{% endif %} fs-6">
+                                    {% if profile.user.nid_verified %}Verified{% else %}Pending Verification{% endif %}
+                                </span>
+                                {% if profile.user.nid_verified %}
+                                    <span class="text-muted small">Verified on {{ profile.user.nid_verified_at|date:"F d, Y" }}</span>
+                                {% else %}
+                                    <span class="text-muted small">Awaiting bank officer verification</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Not Uploaded</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if profile.user.nid_card_front %}
+                <div class="row mt-2">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">NID Front</label>
+                        <div class="border rounded p-2 bg-light">
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#nidFrontModal">
+                                <img src="{{ profile.user.nid_card_front.url }}" alt="NID Front" class="img-fluid rounded" style="max-height: 150px; cursor: pointer;">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label text-muted">NID Back</label>
+                        <div class="border rounded p-2 bg-light">
+                            {% if profile.user.nid_card_back %}
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#nidBackModal">
+                                    <img src="{{ profile.user.nid_card_back.url }}" alt="NID Back" class="img-fluid rounded" style="max-height: 150px; cursor: pointer;">
+                                </a>
+                            {% else %}
+                                <span class="text-muted">No back side uploaded</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if farmer %}
+                    {% if not profile.user.nid_verified and profile.user.nid_card_front %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>NID not verified.</strong> Verify this NID card before approving any loan applications from this farmer.
+                    </div>
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+{% if profile.user.nid_card_front %}
+<div class="modal fade" id="nidFrontModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">NID Card Front Side</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ profile.user.nid_card_front.url }}" alt="NID Card Front" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if profile.user.nid_card_back %}
+<div class="modal fade" id="nidBackModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">NID Card Back Side</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ profile.user.nid_card_back.url }}" alt="NID Card Back" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if profile.land_documents %}
+<div class="modal fade" id="landDocModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Land Documents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ profile.land_documents.url }}" alt="Land Document" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload NID Card - Smart Agricultural Loan System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i>Upload NID Card</h4>
+            </div>
+            <div class="card-body p-4">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Important:</strong> Please upload clear images or PDFs of both sides of your National ID card. 
+                    The NID will be verified by a bank officer before you can apply for loans.
+                </div>
+
+                {% if user.nid_card_front or user.nid_card_back %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    You have already uploaded NID cards. Uploading new ones will replace the existing ones and require re-verification.
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.nid_card_front.id_for_label }}" class="form-label fw-bold">NID Card Front Side (Image or PDF)</label>
+                        {{ form.nid_card_front }}
+                        {% if form.nid_card_front.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.nid_card_front.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Accepted formats: JPG, JPEG, PNG, PDF. Maximum file size: 10MB</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.nid_card_back.id_for_label }}" class="form-label fw-bold">NID Card Back Side (Image or PDF)</label>
+                        {{ form.nid_card_back }}
+                        {% if form.nid_card_back.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.nid_card_back.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Accepted formats: JPG, JPEG, PNG, PDF. Maximum file size: 10MB</div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'farmer_profile' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload me-1"></i>Upload NID
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
