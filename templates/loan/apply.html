@@ -2,93 +2,290 @@
 
 {% block title %}Apply for Loan - Smart Agricultural Loan System{% endblock %}
 
+{% block extra_css %}
+<style>
+    .loan-form-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .loan-form-card .card-header {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        padding: 28px 32px;
+        border-radius: 0;
+    }
+    
+    .loan-form-card .card-body {
+        padding: 36px;
+    }
+    
+    .form-label-custom {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+    
+    .form-control-custom {
+        border-radius: 14px;
+        padding: 16px 18px;
+        border: 2px solid #e9ecef;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-custom:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.15);
+    }
+    
+    .form-select-custom {
+        border-radius: 14px;
+        padding: 16px 18px;
+        border: 2px solid #e9ecef;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 45px;
+    }
+    
+    .form-text-custom {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 8px;
+    }
+    
+    /* NID Status Alert */
+    .nid-status {
+        border-radius: 16px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .nid-status.verified {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+        border: 2px solid rgba(40, 167, 69, 0.3);
+    }
+    
+    .nid-status.pending {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+        border: 2px solid rgba(255, 193, 7, 0.3);
+    }
+    
+    .nid-status.not-verified {
+        background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+        border: 2px solid rgba(220, 53, 69, 0.3);
+    }
+    
+    .nid-status .status-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    
+    .nid-status.verified .status-icon {
+        background: rgba(40, 167, 69, 0.2);
+        color: var(--success);
+    }
+    
+    .nid-status.pending .status-icon {
+        background: rgba(255, 193, 7, 0.2);
+        color: #856404;
+    }
+    
+    .nid-status.not-verified .status-icon {
+        background: rgba(220, 53, 69, 0.2);
+        color: var(--danger);
+    }
+    
+    /* EMI Preview */
+    .emi-preview {
+        background: linear-gradient(135deg, var(--secondary-light), #c8e6c9);
+        border-radius: 20px;
+        padding: 28px;
+        border: 2px solid var(--primary);
+    }
+    
+    .emi-preview h5 {
+        font-weight: 600;
+        color: var(--primary-dark);
+        margin-bottom: 16px;
+    }
+    
+    .emi-preview .emi-amount {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    
+    /* Buttons */
+    .btn-submit {
+        border-radius: 14px;
+        padding: 16px 36px;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+    
+    .btn-cancel {
+        border-radius: 14px;
+        padding: 16px 28px;
+        font-weight: 500;
+    }
+    
+    /* Error text */
+    .text-danger-custom {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 6px;
+    }
+    
+    /* Animations */
+    .fade-in {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h4 class="mb-0"><i class="bi bi-currency-dollar me-2"></i>Apply for Loan</h4>
+    <div class="col-lg-8 mx-auto">
+        <div class="loan-form-card">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-currency-dollar fs-4 me-3"></i>
+                <div>
+                    <h4 class="mb-0">Apply for Loan</h4>
+                    <small class="opacity-75">Fill in the details below to apply</small>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ message.tags }} alert-custom fade-in mb-4" role="alert">
+                            <i class="bi 
+                                {% if message.tags == 'success' %}bi-check-circle-fill
+                                {% elif message.tags == 'error' %}bi-x-circle-fill
+                                {% elif message.tags == 'warning' %}bi-exclamation-triangle-fill
+                                {% else %}bi-info-circle-fill{% endif %} me-2"></i>
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
 
-                <div class="mb-4 p-3 rounded" style="background-color: {% if user.nid_verified %}d4edda{% elif user.nid_card_front %}fff3cd{% else %}f8d7da{% endif %};">
-                    <div class="d-flex justify-content-between align-items-center">
+                <!-- NID Status -->
+                <div class="nid-status mb-4 {% if user.nid_verified %}verified{% elif user.nid_card_front %}pending{% else %}not-verified{% endif %}">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="status-icon">
+                            <i class="bi 
+                                {% if user.nid_verified %}bi-check-circle-fill
+                                {% elif user.nid_card_front %}bi-clock-history
+                                {% else %}bi-exclamation-triangle-fill{% endif %}"></i>
+                        </div>
                         <div>
                             <strong>NID Card Status:</strong>
-                            {% if user.nid_verified %}
-                                <span class="badge bg-success ms-2">Verified</span>
-                            {% elif user.nid_card_front %}
-                                <span class="badge bg-warning ms-2">Pending Verification</span>
-                            {% else %}
-                                <span class="badge bg-danger ms-2">Not Uploaded</span>
-                            {% endif %}
+                            <span class="badge badge-custom ms-2
+                                {% if user.nid_verified %}bg-success
+                                {% elif user.nid_card_front %}bg-warning text-dark
+                                {% else %}bg-danger{% endif %}">
+                                {% if user.nid_verified %}Verified
+                                {% elif user.nid_card_front %}Pending Verification
+                                {% else %}Not Uploaded{% endif %}
+                            </span>
                         </div>
-                        <a href="{% url 'upload_nid' %}" class="btn btn-sm {% if user.nid_verified %}btn-outline-success{% else %}btn-outline-danger{% endif %}">
-                            <i class="bi bi-upload me-1"></i>{% if user.nid_card_front %}Update{% else %}Upload{% endif %} NID
-                        </a>
                     </div>
+                    <a href="{% url 'upload_nid' %}" class="btn btn-sm 
+                        {% if user.nid_verified %}btn-outline-success{% else %}btn-outline-danger{% endif %}">
+                        <i class="bi bi-upload me-1"></i>
+                        {% if user.nid_card_front %}Update{% else %}Upload{% endif %} NID
+                    </a>
                 </div>
 
                 {% if loan_types %}
-                <form method="post">
+                <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
+                    
                     <div class="mb-4">
-                        <label for="id_loan_type" class="form-label">Loan Type *</label>
-                        <select class="form-select" id="id_loan_type" name="loan_type" required onchange="updateMaxAmount()">
+                        <label for="id_loan_type" class="form-label-custom">
+                            <i class="bi bi-folder me-2"></i>Loan Type *
+                        </label>
+                        <select class="form-select form-select-custom" id="id_loan_type" name="loan_type" required onchange="updateMaxAmount()">
                             <option value="">Select loan type</option>
                             {% for lt in loan_types %}
                                 <option value="{{ lt.id }}" data-max="{{ lt.max_amount }}" data-rate="{{ lt.interest_rate }}">
-                                    {{ lt.name }} - {{ lt.interest_rate }}% Interest (Max: ৳{{ lt.max_amount }})
+                                    {{ lt.name }} - {{ lt.interest_rate }}% Interest (Max: ৳{{ lt.max_amount|comma }})
                                 </option>
                             {% endfor %}
                         </select>
                         {% if form.loan_type.errors %}
-                            <div class="text-danger small">{{ form.loan_type.errors }}</div>
+                            <div class="text-danger-custom">
+                                {% for error in form.loan_type.errors %}{{ error }}{% endfor %}
+                            </div>
                         {% endif %}
                     </div>
                     
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_amount" class="form-label">Loan Amount (BDT) *</label>
-                            <input type="number" class="form-control" id="id_amount" name="amount" step="0.01" min="1" max="{{ max_loan_amount }}" required>
-                            <div class="form-text">Maximum: <span id="max_amount_display">৳{{ max_loan_amount|default:0 }}</span></div>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_amount" class="form-label-custom">
+                                <i class="bi bi-currency-dollar me-2"></i>Loan Amount (BDT) *
+                            </label>
+                            <input type="number" class="form-control form-control-custom" id="id_amount" name="amount" step="0.01" min="1" max="{{ max_loan_amount }}" required placeholder="Enter amount">
+                            <div class="form-text-custom">Maximum: <strong id="max_amount_display">৳{{ max_loan_amount|default:0 }}</strong></div>
                             {% if form.amount.errors %}
-                                <div class="text-danger small">{{ form.amount.errors }}</div>
+                                <div class="text-danger-custom">
+                                    {% for error in form.amount.errors %}{{ error }}{% endfor %}
+                                </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_duration_months" class="form-label">Duration (Months) *</label>
-                            <input type="number" class="form-control" id="id_duration_months" name="duration_months" min="1" max="60" required>
+                        <div class="col-md-6 mb-4">
+                            <label for="id_duration_months" class="form-label-custom">
+                                <i class="bi bi-calendar me-2"></i>Duration (Months) *
+                            </label>
+                            <input type="number" class="form-control form-control-custom" id="id_duration_months" name="duration_months" min="1" max="60" required placeholder="Enter duration">
                             {% if form.duration_months.errors %}
-                                <div class="text-danger small">{{ form.duration_months.errors }}</div>
+                                <div class="text-danger-custom">
+                                    {% for error in form.duration_months.errors %}{{ error }}{% endfor %}
+                                </div>
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="alert alert-info" id="emi_preview" style="display: none;">
+                    <!-- EMI Preview -->
+                    <div class="emi-preview mb-4" id="emi_preview" style="display: none;">
                         <h5><i class="bi bi-calculator me-2"></i>EMI Preview</h5>
-                        <p class="mb-1">Estimated Monthly EMI: <strong id="emi_value">৳0.00</strong></p>
-                        <p class="mb-0 small text-muted">This is an estimate. Actual EMI may vary.</p>
+                        <div class="emi-amount" id="emi_value">৳0.00</div>
+                        <small class="text-muted">Estimated Monthly EMI</small>
+                        <p class="mt-3 mb-0 small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            This is an estimate. Actual EMI may vary based on final approval.
+                        </p>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-1"></i>Submit Application
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary-custom btn-submit">
+                            <i class="bi bi-check-lg me-2"></i>Submit Application
                         </button>
-                        <a href="{% url 'loan_history' %}" class="btn btn-secondary">Cancel</a>
+                        <a href="{% url 'loan_history' %}" class="btn btn-secondary btn-cancel">Cancel</a>
                     </div>
                 </form>
                 {% else %}
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>No loan types available. Please contact administrator.
+                <div class="alert alert-warning alert-custom">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    No loan types available. Please contact administrator.
                 </div>
                 {% endif %}
             </div>
@@ -97,13 +294,18 @@
 </div>
 
 <script>
+// Template filter for comma formatting
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function updateMaxAmount() {
     const select = document.getElementById('id_loan_type');
     const option = select.options[select.selectedIndex];
     const maxAmount = option.dataset.max || {{ max_loan_amount|default:0 }};
     const rate = option.dataset.rate || 0;
     
-    document.getElementById('max_amount_display').textContent = '৳' + parseFloat(maxAmount).toLocaleString();
+    document.getElementById('max_amount_display').textContent = '৳' + formatNumber(parseFloat(maxAmount).toFixed(0));
     document.getElementById('id_amount').max = maxAmount;
     
     calculateEMI();
@@ -116,15 +318,20 @@ function calculateEMI() {
     const amount = parseFloat(document.getElementById('id_amount').value) || 0;
     const months = parseInt(document.getElementById('id_duration_months').value) || 0;
     
-    if (amount > 0 && months > 0 && rate > 0) {
-        const monthlyRate = rate / 100 / 12;
-        const emi = amount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
-        document.getElementById('emi_value').textContent = '৳' + emi.toFixed(2);
+    let emi = 0;
+    
+    if (amount > 0 && months > 0) {
+        if (rate === 0) {
+            emi = amount / months;
+        } else {
+            const monthlyRate = rate / 100 / 12;
+            emi = amount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+        }
+        
+        document.getElementById('emi_value').textContent = '৳' + formatNumber(emi.toFixed(2));
         document.getElementById('emi_preview').style.display = 'block';
-    } else if (amount > 0 && months > 0 && rate === 0) {
-        const emi = amount / months;
-        document.getElementById('emi_value').textContent = '৳' + emi.toFixed(2);
-        document.getElementById('emi_preview').style.display = 'block';
+    } else {
+        document.getElementById('emi_preview').style.display = 'none';
     }
 }
 

@@ -14,6 +14,11 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Sum, Count
 from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth import get_user_model
+import json
 from .forms import (
     UserRegistrationForm,
     UserUpdateForm,
@@ -70,6 +75,8 @@ def admin_dashboard(request):
     recent_loans = LoanApplication.objects.order_by("-created_at")[:5]
     recent_repayments = Repayment.objects.order_by("-payment_date")[:5]
 
+    pending_bank_officers = User.objects.filter(role="Bank Officer", is_approved=False)
+
     context = {
         "dashboard_type": "admin",
         "total_farmers": total_farmers,
@@ -83,6 +90,7 @@ def admin_dashboard(request):
         "loans_by_status": list(loans_by_status),
         "recent_loans": recent_loans,
         "recent_repayments": recent_repayments,
+        "pending_bank_officers": pending_bank_officers,
     }
     return render(request, "dashboard/admin.html", context)
 
@@ -163,6 +171,12 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if user.role == "Bank Officer" and not user.is_approved:
+                messages.info(
+                    request,
+                    "Registration successful! Your account is pending approval by admin.",
+                )
+                return redirect("login")
             login(request, user)
             messages.success(request, "Registration successful!")
             return redirect_after_login(user)
@@ -177,6 +191,9 @@ def user_login(request):
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            if user.role == "Bank Officer" and not user.is_approved:
+                messages.error(request, "Your account is pending approval by admin.")
+                return redirect("login")
             login(request, user)
             messages.success(request, f"Welcome back, {user.username}!")
             return redirect_after_login(user)
@@ -208,7 +225,7 @@ def redirect_after_login(user):
     if user.role == "Admin":
         return redirect("dashboard")
     elif user.role == "Bank Officer":
-        return redirect("home")
+        return redirect("dashboard")
     else:
         return redirect("home")
 
@@ -322,13 +339,44 @@ def loan_apply(request):
         messages.warning(request, "Please complete your farmer profile first.")
         return redirect("farmer_profile_create")
 
+    if hasattr(request.user, "loan_application"):
+        messages.warning(request, "You already have a loan application.")
+        return redirect("loan_history")
+
+    existing_approved = LoanApplication.objects.filter(
+        farmer__nid_number=request.user.nid_number, status="Approved"
+    ).exists()
+    if existing_approved:
+        messages.error(request, "A loan has already been approved for this NID.")
+        return redirect("loan_history")
+
     if request.method == "POST":
         form = LoanApplicationForm(request.POST)
         if form.is_valid():
             application = form.save(commit=False)
             application.farmer = request.user
+
+            application.risk_score = application.calculate_risk_score()
+            application.emi = application.calculate_emi()
+
+            if application.risk_score >= 70:
+                application.status = "Approved"
+            elif application.risk_score < 40:
+                application.status = "Rejected"
+
             application.save()
-            messages.success(request, "Loan application submitted successfully!")
+
+            if application.risk_score >= 70:
+                messages.success(
+                    request, "Loan application submitted and auto-approved!"
+                )
+            elif application.risk_score < 40:
+                messages.warning(
+                    request, "Loan application auto-rejected due to low priority score."
+                )
+            else:
+                messages.success(request, "Loan application submitted successfully!")
+
             return redirect("loan_history")
     else:
         form = LoanApplicationForm()
@@ -572,3 +620,120 @@ def nid_verification_list(request):
         .count(),
     }
     return render(request, "bank_officer/nid_verification_list.html", context)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def farmer_register(request):
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"success": False, "message": "Invalid JSON data"}, status=400
+        )
+
+    name = data.get("name", "").strip()
+    nid_number = data.get("nid_number", "").strip()
+    phone = data.get("phone", "").strip()
+    email = data.get("email", "").strip()
+
+    if not name:
+        return JsonResponse(
+            {"success": False, "message": "Name is required"}, status=400
+        )
+
+    if not nid_number:
+        return JsonResponse(
+            {"success": False, "message": "NID number is required"}, status=400
+        )
+
+    if not phone:
+        return JsonResponse(
+            {"success": False, "message": "Phone number is required"}, status=400
+        )
+
+    if not email:
+        return JsonResponse(
+            {"success": False, "message": "Email is required"}, status=400
+        )
+
+    if not nid_number.isdigit() or len(nid_number) < 10:
+        return JsonResponse(
+            {"success": False, "message": "NID must be at least 10 digits"}, status=400
+        )
+
+    if not phone.isdigit() or len(phone) < 10:
+        return JsonResponse(
+            {"success": False, "message": "Phone must be at least 10 digits"},
+            status=400,
+        )
+
+    if User.objects.filter(nid_number=nid_number).exists():
+        return JsonResponse(
+            {"success": False, "message": "NID already registered"}, status=400
+        )
+
+    if User.objects.filter(phone_number=phone).exists():
+        return JsonResponse(
+            {"success": False, "message": "Phone number already registered"}, status=400
+        )
+
+    if User.objects.filter(email=email).exists():
+        return JsonResponse(
+            {"success": False, "message": "Email already registered"}, status=400
+        )
+
+    try:
+        username = f"farmer_{nid_number}"
+        base_username = username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}_{counter}"
+            counter += 1
+
+        import uuid
+
+        temp_password = str(uuid.uuid4())[:12]
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=temp_password,
+            first_name=name.split()[0] if name else "",
+            last_name=" ".join(name.split()[1:]) if len(name.split()) > 1 else "",
+            phone_number=phone,
+            nid_number=nid_number,
+            role="Farmer",
+            is_verified=True,
+        )
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Registration Successful",
+                "user_id": user.id,
+                "username": user.username,
+                "temp_password": temp_password,
+            },
+            status=201,
+        )
+
+    except Exception as e:
+        return JsonResponse(
+            {"success": False, "message": f"Registration failed: {str(e)}"}, status=500
+        )
+
+
+@login_required
+def approve_bank_officer(request, user_id):
+    if request.user.role != "Admin":
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
+    bank_officer = get_object_or_404(User, id=user_id, role="Bank Officer")
+    bank_officer.is_approved = True
+    bank_officer.save()
+    messages.success(
+        request, f"Bank officer {bank_officer.username} has been approved."
+    )
+    return redirect("dashboard")

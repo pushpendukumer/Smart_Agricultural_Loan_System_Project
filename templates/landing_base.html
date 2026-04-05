@@ -1,71 +1,297 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Smart Agricultural Loan System - Empowering Farmers with Easy Access to Credit">
     <title>{% block title %}Smart Agricultural Loan System{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    
     <style>
         :root {
-            --agri-green: #2e7d32;
-            --agri-green-light: #4caf50;
-            --agri-green-dark: #1b5e20;
-            --agri-light: #e8f5e9;
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary: #81c784;
+            --secondary-light: #e8f5e9;
+            --bg-primary: #f9f9f9;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --warm-cream: #faf8f5;
+            --deep-forest: #1a3a1a;
+        }
+        
+        * {
+            font-family: 'Poppins', sans-serif;
         }
         
         body {
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, var(--warm-cream) 0%, #f0f4f0 50%, var(--secondary-light) 100%);
             min-height: 100vh;
+            color: var(--text-primary);
         }
         
-        .navbar {
-            background: linear-gradient(135deg, var(--agri-green-dark), var(--agri-green));
+        /* Navbar Styles */
+        .navbar-custom {
+            background: linear-gradient(135deg, var(--deep-forest), var(--primary-dark)) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.15);
+            padding: 16px 0;
+            transition: all 0.3s ease;
         }
         
-        .btn-primary {
-            background-color: var(--agri-green);
-            border-color: var(--agri-green);
+        .navbar-custom.navbar-scrolled {
+            padding: 10px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         
-        .btn-primary:hover {
-            background-color: var(--agri-green-dark);
-            border-color: var(--agri-green-dark);
+        .navbar-brand {
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        .footer {
-            background: linear-gradient(135deg, var(--agri-green-dark), var(--agri-green));
+        .navbar-brand i {
+            font-size: 1.6rem;
+        }
+        
+        .nav-link {
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            padding: 10px 18px !important;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 60%;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.35);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        }
+        
+        /* Footer Styles */
+        .footer-custom {
+            background: linear-gradient(135deg, var(--deep-forest), var(--primary-dark));
             color: white;
-            padding: 20px 0;
-            margin-top: auto;
+            padding: 48px 0 24px;
+        }
+        
+        .footer-custom h5 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .footer-custom a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            padding: 4px 0;
+        }
+        
+        .footer-custom a:hover {
+            color: white;
+            padding-left: 8px;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 24px;
+            margin-top: 32px;
+        }
+        
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading Spinner */
+        .spinner-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .spinner-wrapper.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner-custom {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--secondary-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
-<body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container-fluid">
+<body>
+    <!-- Loading Spinner -->
+    <div class="spinner-wrapper">
+        <div class="spinner-custom"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
             <a class="navbar-brand" href="/">
-                <i class="bi bi-flower1 me-2"></i>Smart Agricultural Loan System
+                <i class="bi bi-flower1"></i>
+                <span>SmartAgri Loan</span>
             </a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{% url 'login' %}">Sign In</a>
-                <a class="nav-link btn btn-outline-light ms-2" href="{% url 'register' %}">Register</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Sign In</a>
+                    </li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="nav-link btn btn-register text-white" href="{% url 'register' %}">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
 
-    <div class="flex-grow-1">
+    <!-- Main Content -->
+    <main class="flex-grow-1">
         {% block content %}{% endblock %}
-    </div>
+    </main>
 
-    <footer class="footer text-center">
+    <!-- Footer -->
+    <footer class="footer-custom">
         <div class="container">
-            <p class="mb-0">&copy; 2026 Smart Agricultural Loan System. All Rights Reserved.</p>
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h5><i class="bi bi-flower1 me-2"></i>SmartAgri Loan</h5>
+                    <p class="text-white-80">Empowering farmers with easy access to credit for agricultural growth and development.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#"><i class="bi bi-facebook fs-5"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x fs-5"></i></a>
+                        <a href="#"><i class="bi bi-instagram fs-5"></i></a>
+                        <a href="#"><i class="bi bi-linkedin fs-5"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5>Quick Links</h5>
+                    <a href="/">Home</a>
+                    <a href="#features">Features</a>
+                    <a href="#about">About Us</a>
+                    <a href="{% url 'register' %}">Register</a>
+                </div>
+                <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+                    <h5>Services</h5>
+                    <a href="#">Crop Loan</a>
+                    <a href="#">Equipment Loan</a>
+                    <a href="#">Livestock Loan</a>
+                    <a href="#">Storage Loan</a>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5>Contact</h5>
+                    <a href="tel:+8801234567890"><i class="bi bi-phone me-2"></i>+880 123 456 7890</a>
+                    <a href="mailto:info@smartagri.com"><i class="bi bi-envelope me-2"></i>info@smartagri.com</a>
+                    <a href="#"><i class="bi bi-geo-alt me-2"></i>Dhaka, Bangladesh</a>
+                </div>
+            </div>
+            <div class="footer-bottom text-center">
+                <p class="mb-0">&copy; 2026 Smart Agricultural Loan System. All Rights Reserved.</p>
+            </div>
         </div>
     </footer>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/custom.js' %}"></script>
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

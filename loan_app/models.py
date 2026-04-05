@@ -10,6 +10,9 @@ class User(AbstractUser):
     ]
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="Farmer")
+    is_approved = models.BooleanField(
+        default=False, help_text="For Bank Officers - requires admin approval"
+    )
     phone_number = models.CharField(max_length=20, blank=True)
     profile_picture = models.ImageField(
         upload_to="profile_pictures/", blank=True, null=True
@@ -38,6 +41,13 @@ class User(AbstractUser):
         related_name="nid_verifications",
     )
     nid_verified_at = models.DateTimeField(null=True, blank=True)
+    nid_number = models.CharField(
+        max_length=20,
+        blank=True,
+        unique=True,
+        null=True,
+        help_text="National ID number (unique per farmer)",
+    )
 
     def __str__(self):
         return self.username
@@ -100,8 +110,8 @@ class LoanApplication(models.Model):
         ("Rejected", "Rejected"),
     ]
 
-    farmer = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="loan_applications"
+    farmer = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="loan_application"
     )
     loan_type = models.ForeignKey(
         LoanType, on_delete=models.CASCADE, related_name="applications"
@@ -152,20 +162,27 @@ class LoanApplication(models.Model):
 
             score = 0
 
-            if income >= 50000:
-                score += 30
-            elif income >= 30000:
-                score += 20
-            elif income >= 15000:
-                score += 10
+            # POOR FARMER PRIORITY - Lower income = Higher score (max 35 pts)
+            if income < 15000:
+                score += 35
+            elif income < 30000:
+                score += 25
+            elif income < 50000:
+                score += 15
+            else:
+                score += 5
 
-            if land_size >= 50:
+            # SMALL LAND PRIORITY - Smaller land = Higher score (max 30 pts)
+            if land_size < 5:
                 score += 30
-            elif land_size >= 20:
+            elif land_size < 20:
                 score += 20
-            elif land_size >= 5:
+            elif land_size < 50:
                 score += 10
+            else:
+                score += 5
 
+            # LOWER LOAN AMOUNT RELATIVE TO INCOME = Higher score (max 25 pts)
             loan_to_income_ratio = float(self.amount) / income
             if loan_to_income_ratio <= 0.5:
                 score += 25
@@ -173,6 +190,17 @@ class LoanApplication(models.Model):
                 score += 15
             elif loan_to_income_ratio <= 2.0:
                 score += 5
+            else:
+                score += 0
+
+            # PREVIOUS GOOD REPAYMENT HISTORY BONUS (max 10 pts)
+            previous_loans = LoanApplication.objects.filter(
+                farmer=self.farmer, status="Approved"
+            )
+            if previous_loans.exists():
+                all_repaid = all(loan.status == "Approved" for loan in previous_loans)
+                if all_repaid:
+                    score += 10
 
             return min(score, 100)
         except FarmerProfile.DoesNotExist:

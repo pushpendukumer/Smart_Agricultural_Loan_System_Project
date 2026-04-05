@@ -2,71 +2,383 @@
 
 {% block title %}Upload NID Card - Smart Agricultural Loan System{% endblock %}
 
+{% block extra_css %}
+<style>
+    .upload-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .upload-card .card-header {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        padding: 28px 32px;
+        border-radius: 0;
+    }
+    
+    .upload-card .card-body {
+        padding: 36px;
+    }
+    
+    /* File Upload Zone */
+    .file-upload-area {
+        border: 3px dashed var(--primary);
+        border-radius: 20px;
+        padding: 48px 32px;
+        text-align: center;
+        background: linear-gradient(135deg, var(--secondary-light), #f1f8e9);
+        transition: all 0.4s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .file-upload-area::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(46, 125, 50, 0.05), transparent);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+    
+    .file-upload-area:hover {
+        border-color: var(--primary-dark);
+        transform: scale(1.01);
+        box-shadow: 0 10px 40px rgba(46, 125, 50, 0.2);
+    }
+    
+    .file-upload-area:hover::before {
+        opacity: 1;
+    }
+    
+    .file-upload-area.drag-over {
+        border-color: var(--primary-dark);
+        background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+    }
+    
+    .file-upload-area input[type="file"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload-icon {
+        width: 100px;
+        height: 100px;
+        border-radius: 24px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+    }
+    
+    .file-upload-area:hover .upload-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .upload-icon i {
+        font-size: 2.8rem;
+        color: var(--primary);
+    }
+    
+    .upload-text h5 {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .upload-text p {
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+    
+    .upload-text .file-types {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 12px;
+    }
+    
+    /* File Preview */
+    .file-preview {
+        display: none;
+        margin-top: 24px;
+        padding: 20px;
+        background: var(--secondary-light);
+        border-radius: 16px;
+    }
+    
+    .file-preview.active {
+        display: block;
+        animation: fadeIn 0.4s ease;
+    }
+    
+    .file-preview .preview-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .file-preview .preview-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .preview-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    
+    .preview-info {
+        flex: 1;
+    }
+    
+    .preview-info h6 {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    
+    .preview-info small {
+        color: var(--text-muted);
+    }
+    
+    .preview-remove {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(220, 53, 69, 0.1);
+        border: none;
+        color: var(--danger);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .preview-remove:hover {
+        background: var(--danger);
+        color: white;
+    }
+    
+    /* Info Box */
+    .info-box {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
+        border: 2px solid rgba(23, 162, 184, 0.3);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .info-box .info-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(23, 162, 184, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: var(--info);
+        flex-shrink: 0;
+    }
+    
+    .info-box h6 {
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+    
+    .info-box p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+    }
+    
+    /* Warning Box */
+    .warning-box {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 193, 7, 0.05));
+        border: 2px solid rgba(255, 193, 7, 0.3);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .warning-box i {
+        color: #856404;
+        font-size: 1.3rem;
+    }
+    
+    /* Buttons */
+    .btn-upload {
+        border-radius: 14px;
+        padding: 16px 36px;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+    
+    .btn-cancel {
+        border-radius: 14px;
+        padding: 16px 28px;
+        font-weight: 500;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card shadow">
-            <div class="card-header py-3">
-                <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i>Upload NID Card</h4>
+    <div class="col-lg-8 mx-auto">
+        <div class="upload-card">
+            <div class="card-header d-flex align-items-center">
+                <i class="bi bi-person-badge fs-4 me-3"></i>
+                <div>
+                    <h4 class="mb-0">Upload NID Card</h4>
+                    <small class="opacity-75">Verify your identity</small>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ message.tags }} alert-custom fade-in mb-4" role="alert">
+                            <i class="bi 
+                                {% if message.tags == 'success' %}bi-check-circle-fill
+                                {% elif message.tags == 'error' %}bi-x-circle-fill
+                                {% elif message.tags == 'warning' %}bi-exclamation-triangle-fill
+                                {% else %}bi-info-circle-fill{% endif %} me-2"></i>
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
 
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Important:</strong> Please upload clear images or PDFs of both sides of your National ID card. 
-                    The NID will be verified by a bank officer before you can apply for loans.
+                <!-- Info Box -->
+                <div class="info-box mb-4">
+                    <div class="info-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <h6>Important</h6>
+                        <p>Please upload clear images or PDFs of both sides of your National ID card. The NID will be verified by a bank officer before you can apply for loans.</p>
+                    </div>
                 </div>
 
+                <!-- Warning if already uploaded -->
                 {% if user.nid_card_front or user.nid_card_back %}
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    You have already uploaded NID cards. Uploading new ones will replace the existing ones and require re-verification.
+                <div class="warning-box mb-4">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>You have already uploaded NID cards. Uploading new ones will replace the existing ones and require re-verification.</span>
                 </div>
                 {% endif %}
 
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     
+                    <!-- Front Side Upload -->
                     <div class="mb-4">
-                        <label for="{{ form.nid_card_front.id_for_label }}" class="form-label fw-bold">NID Card Front Side (Image or PDF)</label>
-                        {{ form.nid_card_front }}
+                        <label class="form-label-custom fw-bold mb-3">
+                            <i class="bi bi-card-heading me-2"></i>NID Card Front Side (Image or PDF)
+                        </label>
+                        <div class="file-upload-area" id="upload-front">
+                            <input type="file" id="id_nid_card_front" name="nid_card_front" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileSelect(this, 'front')">
+                            <div class="upload-icon">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h5>Drop your file here or click to browse</h5>
+                                <p>Upload front side of your NID card</p>
+                                <div class="file-types">Accepted: JPG, JPEG, PNG, PDF (Max 10MB)</div>
+                            </div>
+                        </div>
+                        <div class="file-preview" id="preview-front">
+                            <div class="preview-item">
+                                <div class="preview-icon"><i class="bi bi-file-earmark-image"></i></div>
+                                <div class="preview-info">
+                                    <h6 id="filename-front">filename.jpg</h6>
+                                    <small id="filesize-front">0 KB</small>
+                                </div>
+                                <button type="button" class="preview-remove" onclick="removeFile('front')">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.nid_card_front.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.nid_card_front.errors %}
-                                    {{ error }}
-                                {% endfor %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.nid_card_front.errors %}{{ error }}{% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">Accepted formats: JPG, JPEG, PNG, PDF. Maximum file size: 10MB</div>
                     </div>
 
+                    <!-- Back Side Upload -->
                     <div class="mb-4">
-                        <label for="{{ form.nid_card_back.id_for_label }}" class="form-label fw-bold">NID Card Back Side (Image or PDF)</label>
-                        {{ form.nid_card_back }}
+                        <label class="form-label-custom fw-bold mb-3">
+                            <i class="bi bi-card-text me-2"></i>NID Card Back Side (Image or PDF)
+                        </label>
+                        <div class="file-upload-area" id="upload-back">
+                            <input type="file" id="id_nid_card_back" name="nid_card_back" accept=".jpg,.jpeg,.png,.pdf" onchange="handleFileSelect(this, 'back')">
+                            <div class="upload-icon">
+                                <i class="bi bi-cloud-arrow-up"></i>
+                            </div>
+                            <div class="upload-text">
+                                <h5>Drop your file here or click to browse</h5>
+                                <p>Upload back side of your NID card</p>
+                                <div class="file-types">Accepted: JPG, JPEG, PNG, PDF (Max 10MB)</div>
+                            </div>
+                        </div>
+                        <div class="file-preview" id="preview-back">
+                            <div class="preview-item">
+                                <div class="preview-icon"><i class="bi bi-file-earmark-image"></i></div>
+                                <div class="preview-info">
+                                    <h6 id="filename-back">filename.jpg</h6>
+                                    <small id="filesize-back">0 KB</small>
+                                </div>
+                                <button type="button" class="preview-remove" onclick="removeFile('back')">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% if form.nid_card_back.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.nid_card_back.errors %}
-                                    {{ error }}
-                                {% endfor %}
+                            <div class="text-danger mt-2">
+                                {% for error in form.nid_card_back.errors %}{{ error }}{% endfor %}
                             </div>
                         {% endif %}
-                        <div class="form-text">Accepted formats: JPG, JPEG, PNG, PDF. Maximum file size: 10MB</div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'farmer_profile' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left me-1"></i>Cancel
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between pt-3">
+                        <a href="{% url 'farmer_profile' %}" class="btn btn-secondary btn-cancel">
+                            <i class="bi bi-arrow-left me-2"></i>Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-upload me-1"></i>Upload NID
+                        <button type="submit" class="btn btn-primary-custom btn-upload">
+                            <i class="bi bi-upload me-2"></i>Upload NID
                         </button>
                     </div>
                 </form>
@@ -74,4 +386,73 @@
         </div>
     </div>
 </div>
+
+<script>
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function handleFileSelect(input, side) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    // Update preview
+    const preview = document.getElementById('preview-' + side);
+    const filename = document.getElementById('filename-' + side);
+    const filesize = document.getElementById('filesize-' + side);
+    const uploadArea = document.getElementById('upload-' + side);
+    
+    filename.textContent = file.name;
+    filesize.textContent = formatFileSize(file.size);
+    preview.classList.add('active');
+    
+    // Update upload area
+    uploadArea.querySelector('.upload-icon i').className = 'bi bi-check-circle-fill text-success';
+    uploadArea.querySelector('h5').textContent = 'File selected!';
+    uploadArea.querySelector('p').textContent = file.name;
+}
+
+function removeFile(side) {
+    const input = document.getElementById('id_nid_card_' + side);
+    const preview = document.getElementById('preview-' + side);
+    const uploadArea = document.getElementById('upload-' + side);
+    
+    input.value = '';
+    preview.classList.remove('active');
+    
+    // Reset upload area
+    uploadArea.querySelector('.upload-icon i').className = 'bi bi-cloud-arrow-up';
+    uploadArea.querySelector('h5').textContent = 'Drop your file here or click to browse';
+    uploadArea.querySelector('p').textContent = side === 'front' ? 'Upload front side of your NID card' : 'Upload back side of your NID card';
+}
+
+// Drag and drop
+document.querySelectorAll('.file-upload-area').forEach(area => {
+    area.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+    
+    area.addEventListener('dragleave', function() {
+        this.classList.remove('drag-over');
+    });
+    
+    area.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        
+        const input = this.querySelector('input[type="file"]');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            input.files = files;
+            const side = input.name.includes('front') ? 'front' : 'back';
+            input.dispatchEvent(new Event('change'));
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -74,4 +74,9 @@ urlpatterns = [
     path(
         "nid/verification/", views.nid_verification_list, name="nid_verification_list"
     ),
+    path(
+        "approve_bank_officer/<int:user_id>/",
+        views.approve_bank_officer,
+        name="approve_bank_officer",
+    ),
 ]

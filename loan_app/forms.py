@@ -10,7 +10,9 @@ from .models import User, FarmerProfile, LoanType, LoanApplication, Repayment
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=20, required=False)
-    role = forms.ChoiceField(choices=User.ROLE_CHOICES, required=True)
+    role = forms.ChoiceField(
+        choices=[("Farmer", "Farmer"), ("Bank Officer", "Bank Officer")], required=True
+    )
 
     class Meta:
         model = User
@@ -21,11 +23,25 @@ class UserRegistrationForm(UserCreationForm):
         for field in self.fields:
             self.fields[field].widget.attrs.update({"class": "form-control"})
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email already registered")
+        return email
+
+    def clean_nid_number(self):
+        nid_number = self.cleaned_data.get("nid_number")
+        if User.objects.filter(nid_number=nid_number).exists():
+            raise forms.ValidationError("NID already registered")
+        return nid_number
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         user.phone_number = self.cleaned_data.get("phone_number", "")
         user.role = self.cleaned_data["role"]
+        if user.role == "Bank Officer":
+            user.is_approved = False
         if commit:
             user.save()
         return user

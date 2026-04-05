@@ -2,48 +2,218 @@
 
 {% block title %}Login - Smart Agricultural Loan System{% endblock %}
 
+{% block extra_css %}
+<style>
+    .auth-card {
+        border: none;
+        border-radius: 28px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+    
+    .auth-card .card-header {
+        background: linear-gradient(135deg, var(--deep-forest) 0%, var(--primary-dark) 100%);
+        padding: 36px 24px;
+        border-radius: 0 !important;
+    }
+    
+    .auth-card .card-header h3 {
+        font-weight: 700;
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+    }
+    
+    .auth-card .card-body {
+        padding: 44px;
+    }
+    
+    .form-floating > label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    
+    .form-control {
+        border-radius: 14px;
+        padding: 16px 18px;
+        border: 2px solid #e9ecef;
+        background: white;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.15);
+    }
+    
+    .form-control.is-invalid {
+        border-color: var(--danger);
+    }
+    
+    .form-label-custom {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-auth {
+        border-radius: 14px;
+        padding: 16px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-auth:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(46, 125, 50, 0.35);
+    }
+    
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 28px 0;
+    }
+    
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .divider span {
+        padding: 0 16px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    
+    .auth-link {
+        color: var(--primary);
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .auth-link:hover {
+        color: var(--primary-dark);
+        text-decoration: underline;
+    }
+    
+    /* Floating password toggle */
+    .password-toggle {
+        position: relative;
+    }
+    
+    .password-toggle .toggle-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: color 0.3s ease;
+    }
+    
+    .password-toggle .toggle-icon:hover {
+        color: var(--primary);
+    }
+    
+    .password-toggle .form-control {
+        padding-right: 48px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow">
-            <div class="card-header text-center py-3">
-                <h4 class="mb-0"><i class="bi bi-flower1 me-2"></i>Smart Agricultural Loan System</h4>
-                <p class="mb-0 mt-2 small">Sign in to your account</p>
+<div class="row justify-content-center align-items-center min-vh-75 py-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="auth-card">
+            <div class="card-header text-center">
+                <div class="mb-3">
+                    <i class="bi bi-flower1 fs-1 text-white"></i>
+                </div>
+                <h3 class="text-white">Welcome Back</h3>
+                <p class="mb-0 text-white-80">Sign in to your account</p>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <div class="alert alert-{{ message.tags }} alert-custom fade-in mb-4" role="alert">
+                            <i class="bi 
+                                {% if message.tags == 'success' %}bi-check-circle-fill
+                                {% elif message.tags == 'error' %}bi-x-circle-fill
+                                {% elif message.tags == 'warning' %}bi-exclamation-triangle-fill
+                                {% else %}bi-info-circle-fill{% endif %} me-2"></i>
                             {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     {% endfor %}
                 {% endif %}
 
-                <form method="post" action="{% url 'login' %}">
+                <form method="post" action="{% url 'login' %}" class="needs-validation" novalidate>
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                    
+                    <div class="mb-4">
+                        <label for="username" class="form-label-custom">
+                            <i class="bi bi-person"></i>Username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" required placeholder="Enter your username">
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label-custom">
+                            <i class="bi bi-key"></i>Password
+                        </label>
+                        <div class="password-toggle">
+                            <input type="password" class="form-control" id="password" name="password" required placeholder="Enter your password">
+                            <i class="bi bi-eye-slash toggle-icon" onclick="togglePassword(this)"></i>
+                        </div>
                     </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
+                    
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary-custom btn-auth">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                        </button>
                     </div>
                 </form>
 
-                <hr class="my-4">
                 <div class="text-center">
-                    <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot your password?</a>
+                    <a href="{% url 'password_reset' %}" class="auth-link">
+                        <i class="bi bi-question-circle me-1"></i>Forgot your password?
+                    </a>
                 </div>
-                <div class="text-center mt-2">
-                    <p class="mb-0">Don't have an account? <a href="{% url 'register' %}" class="text-decoration-none">Register here</a></p>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <div class="text-center">
+                    <p class="mb-0">Don't have an account? 
+                        <a href="{% url 'register' %}" class="auth-link">
+                            <i class="bi bi-person-plus me-1"></i>Create one
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function togglePassword(icon) {
+    const input = icon.parentElement.querySelector('input');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    }
+}
+</script>
 {% endblock %}

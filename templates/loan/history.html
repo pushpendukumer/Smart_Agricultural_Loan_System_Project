@@ -48,11 +48,11 @@
                                 <td>৳{{ loan.emi|floatformat:2 }}</td>
                                 <td>
                                     {% if loan.risk_score >= 70 %}
-                                        <span class="badge bg-success">{{ loan.risk_score }}</span>
+                                        <span class="badge bg-success">Priority</span>
                                     {% elif loan.risk_score >= 40 %}
-                                        <span class="badge bg-warning">{{ loan.risk_score }}</span>
+                                        <span class="badge bg-warning">Review</span>
                                     {% else %}
-                                        <span class="badge bg-danger">{{ loan.risk_score }}</span>
+                                        <span class="badge bg-danger">Low</span>
                                     {% endif %}
                                 </td>
                                 <td>
