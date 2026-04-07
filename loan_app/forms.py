@@ -10,13 +10,27 @@ from .models import User, FarmerProfile, LoanType, LoanApplication, Repayment
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=20, required=False)
+    nid_number = forms.CharField(
+        max_length=20,
+        required=False,
+        help_text="National ID Number for verification",
+        widget=forms.TextInput(attrs={"placeholder": "e.g., 1234567890"}),
+    )
     role = forms.ChoiceField(
         choices=[("Farmer", "Farmer"), ("Bank Officer", "Bank Officer")], required=True
     )
 
     class Meta:
         model = User
-        fields = ["username", "email", "phone_number", "role", "password1", "password2"]
+        fields = [
+            "username",
+            "email",
+            "phone_number",
+            "nid_number",
+            "role",
+            "password1",
+            "password2",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,7 +45,7 @@ class UserRegistrationForm(UserCreationForm):
 
     def clean_nid_number(self):
         nid_number = self.cleaned_data.get("nid_number")
-        if User.objects.filter(nid_number=nid_number).exists():
+        if nid_number and User.objects.filter(nid_number=nid_number).exists():
             raise forms.ValidationError("NID already registered")
         return nid_number
 
@@ -39,9 +53,8 @@ class UserRegistrationForm(UserCreationForm):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         user.phone_number = self.cleaned_data.get("phone_number", "")
+        user.nid_number = self.cleaned_data.get("nid_number", "")
         user.role = self.cleaned_data["role"]
-        if user.role == "Bank Officer":
-            user.is_approved = False
         if commit:
             user.save()
         return user

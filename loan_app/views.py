@@ -41,20 +41,8 @@ def dashboard(request):
     if request.user.role == "Admin" or request.user.is_staff:
         return admin_dashboard(request)
     elif request.user.role == "Bank Officer":
-        if not request.user.is_approved:
-            messages.warning(request, "Your account is pending approval by admin.")
-            return render(
-                request, "dashboard/pending_approval.html", {"role": "Bank Officer"}
-            )
         return bank_officer_dashboard(request)
     else:
-        if not request.user.is_verified:
-            messages.warning(
-                request, "Your account is pending approval by a bank officer."
-            )
-            return render(
-                request, "dashboard/pending_approval.html", {"role": "Farmer"}
-            )
         return farmer_dashboard(request)
 
 
@@ -87,8 +75,6 @@ def admin_dashboard(request):
     recent_loans = LoanApplication.objects.order_by("-created_at")[:5]
     recent_repayments = Repayment.objects.order_by("-payment_date")[:5]
 
-    pending_bank_officers = User.objects.filter(role="Bank Officer", is_approved=False)
-
     context = {
         "dashboard_type": "admin",
         "total_farmers": total_farmers,
@@ -102,19 +88,12 @@ def admin_dashboard(request):
         "loans_by_status": list(loans_by_status),
         "recent_loans": recent_loans,
         "recent_repayments": recent_repayments,
-        "pending_bank_officers": pending_bank_officers,
     }
     return render(request, "dashboard/admin.html", context)
 
 
 @login_required
 def bank_officer_dashboard(request):
-    if not request.user.is_approved:
-        messages.warning(request, "Your account is pending approval by admin.")
-        return render(
-            request, "dashboard/pending_approval.html", {"role": "Bank Officer"}
-        )
-
     total_farmers = User.objects.filter(role="Farmer").count()
     total_loans = LoanApplication.objects.count()
     approved_loans = LoanApplication.objects.filter(status="Approved").count()
@@ -146,10 +125,6 @@ def bank_officer_dashboard(request):
 
 @login_required
 def farmer_dashboard(request):
-    if not request.user.is_verified:
-        messages.warning(request, "Your account is pending approval by a bank officer.")
-        return render(request, "dashboard/pending_approval.html", {"role": "Farmer"})
-
     my_loans = LoanApplication.objects.filter(farmer=request.user)
     total_loans = my_loans.count()
     approved_loans = my_loans.filter(status="Approved").count()
@@ -197,12 +172,6 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            if user.role == "Bank Officer" and not user.is_approved:
-                messages.info(
-                    request,
-                    "Registration successful! Your account is pending approval by admin.",
-                )
-                return redirect("login")
             login(request, user)
             messages.success(request, "Registration successful!")
             return redirect_after_login(user)
@@ -217,9 +186,6 @@ def user_login(request):
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            if user.role == "Bank Officer" and not user.is_approved:
-                messages.error(request, "Your account is pending approval by admin.")
-                return redirect("login")
             login(request, user)
             messages.success(request, f"Welcome back, {user.username}!")
             return redirect_after_login(user)
@@ -571,13 +537,8 @@ def upload_nid(request):
     if request.method == "POST":
         form = NIDUploadForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.nid_verified = False
-            user.save()
-            messages.success(
-                request,
-                "NID card uploaded successfully! It will be verified by a bank officer.",
-            )
+            form.save()
+            messages.success(request, "NID card uploaded successfully!")
             return redirect("farmer_profile")
     else:
         form = NIDUploadForm(instance=request.user)
@@ -738,7 +699,6 @@ def farmer_register(request):
             phone_number=phone,
             nid_number=nid_number,
             role="Farmer",
-            is_verified=False,
         )
 
         return JsonResponse(
@@ -756,31 +716,3 @@ def farmer_register(request):
         return JsonResponse(
             {"success": False, "message": f"Registration failed: {str(e)}"}, status=500
         )
-
-
-@login_required
-def approve_farmer(request, user_id):
-    if not (request.user.is_staff or request.user.role == "Bank Officer"):
-        messages.error(request, "Access denied.")
-        return redirect("dashboard")
-
-    farmer = get_object_or_404(User, id=user_id, role="Farmer")
-    farmer.is_verified = True
-    farmer.save()
-    messages.success(request, f"Farmer {farmer.username} has been approved.")
-    return redirect("farmer_list")
-
-
-@login_required
-def approve_bank_officer(request, user_id):
-    if request.user.role != "Admin":
-        messages.error(request, "Access denied.")
-        return redirect("dashboard")
-
-    bank_officer = get_object_or_404(User, id=user_id, role="Bank Officer")
-    bank_officer.is_approved = True
-    bank_officer.save()
-    messages.success(
-        request, f"Bank officer {bank_officer.username} has been approved."
-    )
-    return redirect("dashboard")

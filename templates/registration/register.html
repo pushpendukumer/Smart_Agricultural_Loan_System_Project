@@ -235,6 +235,21 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    <div class="row g-4 mt-2">
+                        <div class="col-md-12">
+                            <label for="id_nid_number" class="form-label-custom">
+                                <i class="bi bi-credit-card-2-front"></i>NID Number (Optional)
+                            </label>
+                            {{ form.nid_number }}
+                            {% if form.nid_number.errors %}
+                                <div class="text-danger-custom">
+                                    {% for error in form.nid_number.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Enter your National ID number for account verification</div>
+                        </div>
+                    </div>
                     
                     <div class="d-grid mt-4">
                         <button type="submit" class="btn btn-primary-custom btn-auth">
