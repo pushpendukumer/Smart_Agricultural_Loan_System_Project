@@ -40,11 +40,13 @@
                             <label class="form-label text-muted">Risk Score</label>
                             <p>
                                 {% if application.risk_score >= 70 %}
-                                    <span class="badge bg-success fs-6">Priority (Deserving)</span>
+                                    <span class="badge bg-success fs-6">Priority (Deserving) - {{ application.risk_score }}</span>
                                 {% elif application.risk_score >= 40 %}
-                                    <span class="badge bg-warning fs-6">Review</span>
+                                    <span class="badge bg-warning fs-6">Review - {{ application.risk_score }}</span>
+                                {% elif application.risk_score > 0 %}
+                                    <span class="badge bg-danger fs-6">Low Priority - {{ application.risk_score }}</span>
                                 {% else %}
-                                    <span class="badge bg-danger fs-6">Low Priority</span>
+                                    <span class="badge bg-secondary fs-6">Pending</span>
                                 {% endif %}
                             </p>
                         </div>

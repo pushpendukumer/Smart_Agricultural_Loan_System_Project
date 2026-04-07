@@ -41,8 +41,20 @@ def dashboard(request):
     if request.user.role == "Admin" or request.user.is_staff:
         return admin_dashboard(request)
     elif request.user.role == "Bank Officer":
+        if not request.user.is_approved:
+            messages.warning(request, "Your account is pending approval by admin.")
+            return render(
+                request, "dashboard/pending_approval.html", {"role": "Bank Officer"}
+            )
         return bank_officer_dashboard(request)
     else:
+        if not request.user.is_verified:
+            messages.warning(
+                request, "Your account is pending approval by a bank officer."
+            )
+            return render(
+                request, "dashboard/pending_approval.html", {"role": "Farmer"}
+            )
         return farmer_dashboard(request)
 
 
@@ -97,6 +109,12 @@ def admin_dashboard(request):
 
 @login_required
 def bank_officer_dashboard(request):
+    if not request.user.is_approved:
+        messages.warning(request, "Your account is pending approval by admin.")
+        return render(
+            request, "dashboard/pending_approval.html", {"role": "Bank Officer"}
+        )
+
     total_farmers = User.objects.filter(role="Farmer").count()
     total_loans = LoanApplication.objects.count()
     approved_loans = LoanApplication.objects.filter(status="Approved").count()
@@ -109,6 +127,10 @@ def bank_officer_dashboard(request):
     )
 
     recent_loans = LoanApplication.objects.order_by("-created_at")[:5]
+    for loan in recent_loans:
+        if loan.risk_score == 0:
+            loan.risk_score = loan.calculate_risk_score()
+            loan.save(update_fields=["risk_score"])
 
     context = {
         "dashboard_type": "bank_officer",
@@ -124,6 +146,10 @@ def bank_officer_dashboard(request):
 
 @login_required
 def farmer_dashboard(request):
+    if not request.user.is_verified:
+        messages.warning(request, "Your account is pending approval by a bank officer.")
+        return render(request, "dashboard/pending_approval.html", {"role": "Farmer"})
+
     my_loans = LoanApplication.objects.filter(farmer=request.user)
     total_loans = my_loans.count()
     approved_loans = my_loans.filter(status="Approved").count()
@@ -255,7 +281,9 @@ def farmer_profile(request):
     if not profile:
         messages.warning(request, "Please complete your farmer profile.")
         return redirect("farmer_profile_create")
-    return render(request, "farmer/profile_view.html", {"profile": profile})
+    return render(
+        request, "farmer/profile_view.html", {"profile": profile, "farmer": None}
+    )
 
 
 @login_required
@@ -265,7 +293,11 @@ def farmer_profile_view(request, user_id):
         return redirect("home")
 
     farmer = get_object_or_404(User, id=user_id, role="Farmer")
+    farmer.refresh_from_db()
     profile = getattr(farmer, "farmer_profile", None)
+    print(
+        f"DEBUG farmer_profile_view: farmer={farmer.id}, nid_verified={farmer.nid_verified}"
+    )
     return render(
         request, "farmer/profile_view.html", {"profile": profile, "farmer": farmer}
     )
@@ -343,13 +375,6 @@ def loan_apply(request):
         messages.warning(request, "You already have a loan application.")
         return redirect("loan_history")
 
-    existing_approved = LoanApplication.objects.filter(
-        farmer__nid_number=request.user.nid_number, status="Approved"
-    ).exists()
-    if existing_approved:
-        messages.error(request, "A loan has already been approved for this NID.")
-        return redirect("loan_history")
-
     if request.method == "POST":
         form = LoanApplicationForm(request.POST)
         if form.is_valid():
@@ -368,14 +393,19 @@ def loan_apply(request):
 
             if application.risk_score >= 70:
                 messages.success(
-                    request, "Loan application submitted and auto-approved!"
+                    request,
+                    f"Loan application submitted and auto-approved! Risk Score: {application.risk_score}",
                 )
             elif application.risk_score < 40:
                 messages.warning(
-                    request, "Loan application auto-rejected due to low priority score."
+                    request,
+                    f"Loan application auto-rejected due to low priority score. Risk Score: {application.risk_score}",
                 )
             else:
-                messages.success(request, "Loan application submitted successfully!")
+                messages.success(
+                    request,
+                    f"Loan application submitted successfully! Risk Score: {application.risk_score}",
+                )
 
             return redirect("loan_history")
     else:
@@ -397,6 +427,10 @@ def loan_history(request):
     applications = LoanApplication.objects.filter(farmer=request.user).order_by(
         "-created_at"
     )
+    for app in applications:
+        if app.risk_score == 0:
+            app.risk_score = app.calculate_risk_score()
+            app.save(update_fields=["risk_score"])
     paginator = Paginator(applications, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -406,6 +440,9 @@ def loan_history(request):
 @login_required
 def loan_detail(request, pk):
     application = get_object_or_404(LoanApplication, pk=pk, farmer=request.user)
+    if application.risk_score == 0:
+        application.risk_score = application.calculate_risk_score()
+        application.save(update_fields=["risk_score"])
     return render(request, "loan/detail.html", {"application": application})
 
 
@@ -416,6 +453,7 @@ def approve_loan(request, pk):
         return redirect("home")
 
     application = get_object_or_404(LoanApplication, pk=pk)
+    application.risk_score = application.calculate_risk_score()
     application.status = "Approved"
     application.save()
     messages.success(request, f"Loan application #{pk} approved!")
@@ -429,6 +467,7 @@ def reject_loan(request, pk):
         return redirect("home")
 
     application = get_object_or_404(LoanApplication, pk=pk)
+    application.risk_score = application.calculate_risk_score()
     application.status = "Rejected"
     application.save()
     messages.success(request, f"Loan application #{pk} rejected!")
@@ -556,29 +595,24 @@ def verify_nid(request, user_id):
     if request.method == "POST":
         action = request.POST.get("action")
         if action == "verify":
-            farmer.nid_verified = True
+            User.objects.filter(id=user_id).update(nid_verified=True, is_verified=True)
+            farmer = User.objects.get(id=user_id)
             farmer.nid_verified_by = request.user
             farmer.nid_verified_at = timezone.now()
-            farmer.save()
+            farmer.save(update_fields=["nid_verified_by", "nid_verified_at"])
             messages.success(
-                request, f"NID for {farmer.username} has been verified successfully!"
+                request,
+                f"NID for {farmer.username} has been verified successfully!",
             )
         elif action == "reject":
-            if farmer.nid_card_front:
-                farmer.nid_card_front.delete()
-                farmer.nid_card_front = None
-            if farmer.nid_card_back:
-                farmer.nid_card_back.delete()
-                farmer.nid_card_back = None
-            farmer.nid_verified = False
-            farmer.nid_verified_by = None
-            farmer.nid_verified_at = None
-            farmer.save()
+            User.objects.filter(id=user_id).update(
+                nid_verified=False, is_verified=False
+            )
             messages.warning(
                 request,
-                f"NID for {farmer.username} has been rejected. The farmer will need to upload a new one.",
+                f"NID for {farmer.username} has been rejected.",
             )
-        return redirect("farmer_profile_view", user_id=farmer.id)
+        return redirect("nid_verification_list")
 
     return render(request, "bank_officer/verify_nid.html", {"farmer": farmer})
 
@@ -704,7 +738,7 @@ def farmer_register(request):
             phone_number=phone,
             nid_number=nid_number,
             role="Farmer",
-            is_verified=True,
+            is_verified=False,
         )
 
         return JsonResponse(
@@ -722,6 +756,19 @@ def farmer_register(request):
         return JsonResponse(
             {"success": False, "message": f"Registration failed: {str(e)}"}, status=500
         )
+
+
+@login_required
+def approve_farmer(request, user_id):
+    if not (request.user.is_staff or request.user.role == "Bank Officer"):
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
+    farmer = get_object_or_404(User, id=user_id, role="Farmer")
+    farmer.is_verified = True
+    farmer.save()
+    messages.success(request, f"Farmer {farmer.username} has been approved.")
+    return redirect("farmer_list")
 
 
 @login_required

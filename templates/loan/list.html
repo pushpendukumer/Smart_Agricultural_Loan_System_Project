@@ -53,11 +53,13 @@
                                 <td>{{ loan.duration_months }} mo</td>
                                 <td>
                                     {% if loan.risk_score >= 70 %}
-                                        <span class="badge bg-success">Priority</span>
+                                        <span class="badge bg-success">Priority ({{ loan.risk_score }})</span>
                                     {% elif loan.risk_score >= 40 %}
-                                        <span class="badge bg-warning">Review</span>
+                                        <span class="badge bg-warning">Review ({{ loan.risk_score }})</span>
+                                    {% elif loan.risk_score > 0 %}
+                                        <span class="badge bg-danger">Low ({{ loan.risk_score }})</span>
                                     {% else %}
-                                        <span class="badge bg-danger">Low</span>
+                                        <span class="badge bg-secondary">Pending</span>
                                     {% endif %}
                                 </td>
                                 <td>

@@ -69,6 +69,7 @@
         height: 100%;
         opacity: 0;
         cursor: pointer;
+        z-index: 10;
     }
     
     .upload-icon {
@@ -290,6 +291,23 @@
                         <p>Please upload clear images or PDFs of both sides of your National ID card. The NID will be verified by a bank officer before you can apply for loans.</p>
                     </div>
                 </div>
+
+                <!-- NID Status -->
+                {% if user.nid_verified %}
+                <div class="alert alert-success d-flex align-items-center mb-4">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div>
+                        <strong>Your NID is verified!</strong> You can now apply for loans.
+                    </div>
+                </div>
+                {% elif user.nid_card_front %}
+                <div class="alert alert-warning d-flex align-items-center mb-4">
+                    <i class="bi bi-hourglass-split me-2 fs-5"></i>
+                    <div>
+                        <strong>Your NID is pending verification.</strong> Please wait for a bank officer to verify your documents.
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Warning if already uploaded -->
                 {% if user.nid_card_front or user.nid_card_back %}

@@ -227,7 +227,7 @@
                             <option value="">Select loan type</option>
                             {% for lt in loan_types %}
                                 <option value="{{ lt.id }}" data-max="{{ lt.max_amount }}" data-rate="{{ lt.interest_rate }}">
-                                    {{ lt.name }} - {{ lt.interest_rate }}% Interest (Max: ৳{{ lt.max_amount|comma }})
+                                    {{ lt.name }} - {{ lt.interest_rate }}% Interest (Max: ৳{{ lt.max_amount|floatformat:0 }})
                                 </option>
                             {% endfor %}
                         </select>

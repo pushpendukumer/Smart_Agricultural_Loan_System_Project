@@ -131,27 +131,36 @@
                 <hr class="my-4">
 
                 <div class="d-flex justify-content-between">
-                    <a href="{% url 'farmer_profile_view' user_id=farmer.id %}" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left me-1"></i>Back to Profile
-                    </a>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'farmer_profile_view' user_id=farmer.id %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Back to Profile
+                        </a>
+                        <a href="{% url 'nid_verification_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-list me-1"></i>Back to List
+                        </a>
+                    </div>
 
                     {% if farmer.nid_card_front %}
                         {% if not farmer.nid_verified %}
                         <form method="post" class="d-inline">
                             {% csrf_token %}
-                            <div class="btn-group" role="group">
-                                <button type="submit" name="action" value="verify" class="btn btn-success">
-                                    <i class="bi bi-check-circle me-1"></i>Verify NID
-                                </button>
-                                <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this NID? The farmer will need to upload a new one.');">
-                                    <i class="bi bi-x-circle me-1"></i>Reject NID
-                                </button>
-                            </div>
+                            <input type="hidden" name="action" value="verify">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle me-1"></i>Verify NID (action=verify)
+                            </button>
+                        </form>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this NID? The farmer will need to upload a new one.');">
+                                <i class="bi bi-x-circle me-1"></i>Reject NID
+                            </button>
                         </form>
                         {% else %}
                         <form method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" name="action" value="reject" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to revoke verification? The farmer will need to upload a new NID.');">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to revoke verification? The farmer will need to upload a new NID.');">
                                 <i class="bi bi-arrow-counterclockwise me-1"></i>Revoke Verification
                             </button>
                         </form>

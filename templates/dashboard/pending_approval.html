@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Approval - Smart Agricultural Loan System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary: #81c784;
+            --secondary-light: #e8f5e9;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+        }
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #faf8f5 0%, #f0f4f0 50%, #e8f5e9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pending-card {
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .pending-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 40px rgba(46, 125, 50, 0.3);
+        }
+        
+        .pending-icon i {
+            font-size: 3.5rem;
+            color: white;
+        }
+        
+        .pending-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+        
+        .pending-card p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        
+        .info-list {
+            text-align: left;
+            background: var(--secondary-light);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+        
+        .info-list li {
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .info-list li:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-list i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+        
+        .logout-btn {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .logout-btn:hover {
+            background: #5a6268;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="row w-100">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow pending-card">
+                <div class="card-body p-5">
+                    <div class="pending-icon">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    
+                    <h3>Account Pending Approval</h3>
+                    
+                    {% if role == 'Farmer' %}
+                    <p>Your farmer account is pending approval by a bank officer. You will be able to apply for loans once your account is verified.</p>
+                    
+                    <ul class="info-list">
+                        <li><i class="bi bi-check-circle"></i> Wait for bank officer to verify your account</li>
+                        <li><i class="bi bi-check-circle"></i> Once approved, you can apply for loans</li>
+                    </ul>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'logout' %}" class="logout-btn">
+                            <i class="bi bi-box-arrow-left me-2"></i>Logout
+                        </a>
+                    </div>
+                    
+                    {% else %}
+                    <p>Your bank officer account is pending approval by the admin. Please contact the administrator for access.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

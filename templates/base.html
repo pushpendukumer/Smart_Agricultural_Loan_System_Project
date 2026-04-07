@@ -377,6 +377,11 @@
                             <i class="bi bi-person-badge"></i> My Profile
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'upload_nid' %}">
+                            <i class="bi bi-upload"></i> Upload NID
+                        </a>
+                    </li>
                     {% elif user.role == 'Bank Officer' %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'loan_list' %}">

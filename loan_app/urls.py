@@ -70,6 +70,7 @@ urlpatterns = [
     path("loan/<int:loan_id>/repayment/", views.make_repayment, name="make_repayment"),
     path("repayments/", views.repayment_history, name="repayment_history"),
     path("farmers/", views.farmer_list, name="farmer_list"),
+    path("farmer/<int:user_id>/approve/", views.approve_farmer, name="approve_farmer"),
     path("nid/verify/<int:user_id>/", views.verify_nid, name="verify_nid"),
     path(
         "nid/verification/", views.nid_verification_list, name="nid_verification_list"

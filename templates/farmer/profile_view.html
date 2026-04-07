@@ -138,13 +138,11 @@
                 </div>
                 {% endif %}
 
-                {% if farmer %}
-                    {% if not profile.user.nid_verified and profile.user.nid_card_front %}
+                {% if farmer and not profile.user.nid_verified and profile.user.nid_card_front %}
                     <div class="alert alert-warning mt-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         <strong>NID not verified.</strong> Verify this NID card before approving any loan applications from this farmer.
                     </div>
-                    {% endif %}
                 {% endif %}
             </div>
         </div>
