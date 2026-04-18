@@ -131,6 +131,10 @@ class LoanApplication(models.Model):
     def __str__(self):
         return f"{self.farmer.username} - {self.loan_type.name} - {self.amount}"
 
+    @property
+    def total_repayment(self):
+        return self.emi * self.duration_months
+
     def calculate_emi(self):
         if self.loan_type.interest_rate > 0:
             principal = float(self.amount)
