@@ -64,6 +64,7 @@ urlpatterns = [
     path("loan/apply/", views.loan_apply, name="loan_apply"),
     path("loan/history/", views.loan_history, name="loan_history"),
     path("loan/<int:pk>/", views.loan_detail, name="loan_detail"),
+    path("loan/<int:pk>/pdf/", views.loan_download_pdf, name="loan_download_pdf"),
     path("loan/<int:pk>/approve/", views.approve_loan, name="approve_loan"),
     path("loan/<int:pk>/reject/", views.reject_loan, name="reject_loan"),
     path("loans/", views.loan_list, name="loan_list"),

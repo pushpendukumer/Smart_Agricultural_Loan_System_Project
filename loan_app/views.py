@@ -14,11 +14,13 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Sum, Count
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
+from fpdf import FPDF
 import json
+from io import BytesIO
 from .forms import (
     UserRegistrationForm,
     UserUpdateForm,
@@ -28,6 +30,144 @@ from .forms import (
     NIDUploadForm,
 )
 from .models import FarmerProfile, LoanApplication, LoanType, Repayment, User
+
+
+class LoanApprovalPDF(FPDF):
+    def header(self):
+        self.set_font("Helvetica", "B", 16)
+        self.cell(0, 10, "Smart Agricultural Loan System", border=False, align="C")
+        self.ln(5)
+        self.set_font("Helvetica", "", 10)
+        self.cell(0, 8, "Agricultural Bank of Bangladesh", border=False, align="C")
+        self.ln(15)
+
+    def footer(self):
+        self.set_y(-20)
+        self.set_font("Helvetica", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", border=False, align="C")
+
+
+def generate_loan_approval_pdf(loan):
+    pdf = LoanApprovalPDF()
+    pdf.add_page()
+
+    farmer = loan.farmer
+    profile = getattr(farmer, "farmer_profile", None)
+
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, "LOAN APPROVAL LETTER", border=False, align="C")
+    pdf.ln(10)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(0, 8, f"Date: {loan.updated_at.strftime('%B %d, %Y')}", border=False, align="R")
+    pdf.ln(15)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(0, 8, "APPROVED LOAN DETAILS", border=False)
+    pdf.ln(8)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(50, 8, "Application ID:", border=0)
+    pdf.cell(0, 8, str(loan.id), border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Status:", border=0)
+    pdf.cell(0, 8, loan.status, border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Loan Type:", border=0)
+    pdf.cell(0, 8, loan.loan_type.name, border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Approved Amount:", border=0)
+    pdf.cell(0, 8, f"BDT {loan.amount:,.2f}", border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Interest Rate:", border=0)
+    pdf.cell(0, 8, f"{loan.loan_type.interest_rate}% per annum", border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Duration:", border=0)
+    pdf.cell(0, 8, f"{loan.duration_months} months", border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Monthly EMI:", border=0)
+    pdf.cell(0, 8, f"BDT {loan.emi:,.2f}", border=0)
+    pdf.ln(15)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(0, 8, "BORROWER DETAILS", border=False)
+    pdf.ln(8)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(50, 8, "Name:", border=0)
+    pdf.cell(0, 8, f"{farmer.first_name} {farmer.last_name}", border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Username:", border=0)
+    pdf.cell(0, 8, farmer.username, border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "NID Number:", border=0)
+    pdf.cell(0, 8, farmer.nid_number or "N/A", border=0)
+    pdf.ln(8)
+
+    pdf.cell(50, 8, "Phone:", border=0)
+    pdf.cell(0, 8, farmer.phone_number or "N/A", border=0)
+    pdf.ln(8)
+
+    if profile:
+        pdf.cell(50, 8, "Land Size:", border=0)
+        pdf.cell(0, 8, f"{profile.land_size} acres", border=0)
+        pdf.ln(8)
+
+        pdf.cell(50, 8, "Crop Type:", border=0)
+        pdf.cell(0, 8, profile.crop_type, border=0)
+        pdf.ln(8)
+
+        pdf.cell(50, 8, "Location:", border=0)
+        pdf.cell(0, 8, profile.location, border=0)
+        pdf.ln(8)
+
+        pdf.cell(50, 8, "Annual Income:", border=0)
+        pdf.cell(0, 8, f"BDT {profile.annual_income:,.2f}", border=0)
+        pdf.ln(15)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(0, 8, "TERMS AND CONDITIONS", border=False)
+    pdf.ln(8)
+
+    pdf.set_font("Helvetica", "", 9)
+    pdf.multi_cell(0, 6, "1. The borrower agrees to repay the loan in monthly installments as stated above.")
+    pdf.ln(2)
+    pdf.multi_cell(0, 6, "2. Late payments will incur additional interest charges as per bank policy.")
+    pdf.ln(2)
+    pdf.multi_cell(0, 6, "3. This approval letter must be presented at the bank to receive the disbursed loan amount.")
+    pdf.ln(2)
+    pdf.multi_cell(0, 6, "4. The bank reserves the right to recall the loan if any information is found to be false.")
+    pdf.ln(15)
+
+    pdf.set_font("Helvetica", "B", 11)
+    pdf.cell(0, 8, "AUTHORIZED SIGNATURES", border=False)
+    pdf.ln(15)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.cell(80, 8, "__________________________", border=0)
+    pdf.cell(0, 8, "__________________________", border=0)
+    pdf.ln(8)
+
+    pdf.cell(80, 8, "Borrower Signature", border=0)
+    pdf.cell(0, 8, "Bank Officer Signature", border=0)
+    pdf.ln(8)
+
+    pdf.cell(80, 8, f"({farmer.first_name} {farmer.last_name})", border=0)
+    pdf.cell(0, 8, "Authorized Signatory", border=0)
+    pdf.ln(15)
+
+    pdf.set_font("Helvetica", "I", 8)
+    pdf.cell(0, 6, f"Risk Score: {loan.risk_score} | Application Date: {loan.created_at.strftime('%B %d, %Y')}", border=False, align="C")
+
+    return pdf
 
 
 def home(request):
@@ -410,6 +550,24 @@ def loan_detail(request, pk):
         application.risk_score = application.calculate_risk_score()
         application.save(update_fields=["risk_score"])
     return render(request, "loan/detail.html", {"application": application})
+
+
+@login_required
+def loan_download_pdf(request, pk):
+    application = get_object_or_404(LoanApplication, pk=pk, farmer=request.user)
+
+    if application.status != "Approved":
+        messages.warning(request, "Only approved loans can download the approval letter.")
+        return redirect("loan_detail", pk=pk)
+
+    pdf = generate_loan_approval_pdf(application)
+
+    buffer = BytesIO()
+    pdf.output(buffer)
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="loan_approval_{pk}.pdf"'
+    return response
 
 
 @login_required

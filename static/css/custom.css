@@ -405,6 +405,47 @@ a:hover {
     overflow: hidden;
 }
 
+/* Mini Stat Card (Stats Section) */
+.stat-card-mini {
+    background: var(--gradient-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    color: var(--text-light);
+    transition: var(--transition-smooth);
+    text-align: center;
+    height: 100%;
+}
+
+.stat-card-mini .icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-card-mini h3 {
+    color: var(--text-light);
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+.stat-card-mini p {
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+
+.stat-card-mini:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
 .stat-card::before {
     content: '';
     position: absolute;
@@ -1108,6 +1149,20 @@ a:hover {
     .btn-custom {
         padding: 8px 18px;
         font-size: 0.9rem;
+    }
+
+    .stat-card-mini {
+        padding: var(--spacing-md);
+    }
+
+    .stat-card-mini h3 {
+        font-size: 1.5rem;
+    }
+
+    .stat-card-mini .icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
     }
 }
 
