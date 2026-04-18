@@ -200,10 +200,14 @@ class LoanApplication(models.Model):
             # PREVIOUS GOOD REPAYMENT HISTORY BONUS (max 10 pts)
             previous_loans = LoanApplication.objects.filter(
                 farmer=self.farmer, status="Approved"
-            )
+            ).exclude(id=self.id)
             if previous_loans.exists():
-                all_repaid = all(loan.status == "Approved" for loan in previous_loans)
-                if all_repaid:
+                fully_repaid = all(
+                    loan.repayments.exists() and 
+                    loan.repayments.order_by('-payment_date').first().remaining_balance <= 0
+                    for loan in previous_loans
+                )
+                if fully_repaid:
                     score += 10
 
             return min(score, 100)
